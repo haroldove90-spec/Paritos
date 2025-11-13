@@ -1,43 +1,203 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
-import SearchAndFilters from './components/SearchAndFilters';
-import RestaurantList from './components/RestaurantList';
 import BottomNav from './components/BottomNav';
 import RoleSwitcher from './components/RoleSwitcher';
 import AdminDashboard from './components/AdminDashboard';
 import CourierDashboard from './components/CourierDashboard';
-import type { UserRole } from './types';
+import HomePage from './pages/HomePage';
+import OrdersPage from './pages/OrdersPage';
+import FavoritesPage from './pages/FavoritesPage';
+import ProfilePage from './pages/ProfilePage';
+import CartPage from './pages/CartPage';
+import RestaurantPage from './pages/RestaurantPage';
+import NotificationsPage from './pages/NotificationsPage';
+import InstallPWA from './components/InstallPWA';
+import type { UserRole, Restaurant, Order, Notification, CartItem, MenuItem, OrderStatus } from './types';
+import { useLocalStorage } from './hooks/useLocalStorage';
+import { mockRestaurants as initialRestaurants } from './data/mockData';
+
+type ActiveView = 'Home' | 'Pedidos' | 'Favoritos' | 'Perfil' | 'Carrito' | 'Restaurant';
+type AdminView = 'Dashboard' | 'Restaurants';
 
 const App: React.FC = () => {
-  const [role, setRole] = useState<UserRole>('Cliente');
+  const [role, setRole] = useLocalStorage<UserRole>('userRole', 'Cliente');
+  const [activeView, setActiveView] = useState<ActiveView>('Home');
+  const [adminView, setAdminView] = useState<AdminView>('Dashboard');
+  const [selectedRestaurantId, setSelectedRestaurantId] = useState<number | null>(null);
+
+  const [restaurants, setRestaurants] = useLocalStorage<Restaurant[]>('restaurants', initialRestaurants);
+  const [cart, setCart] = useLocalStorage<CartItem[]>('cart', []);
+  const [favorites, setFavorites] = useLocalStorage<number[]>('favorites', []);
+  const [orders, setOrders] = useLocalStorage<Order[]>('orders', []);
+  const [notifications, setNotifications] = useLocalStorage<Notification[]>('notifications', [
+      { id: Date.now(), message: '¡Bienvenido a Paritos! Tu app de comida favorita.', read: false, date: new Date().toISOString() },
+  ]);
+  
+  const [isNotificationsOpen, setNotificationsOpen] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isInstallDismissed, setIsInstallDismissed] = useLocalStorage('installDismissed', false);
+
+  useEffect(() => {
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    });
+  }, []);
+
+  const handleToggleFavorite = (restaurantId: number) => {
+    setFavorites(prev => 
+      prev.includes(restaurantId) 
+        ? prev.filter(id => id !== restaurantId)
+        : [...prev, restaurantId]
+    );
+  };
+
+  const handleAddToCart = (item: MenuItem, restaurantId: number) => {
+    setCart(prev => {
+        const existingItem = prev.find(cartItem => cartItem.id === item.id);
+        if (existingItem) {
+            return prev.map(cartItem => cartItem.id === item.id ? { ...cartItem, quantity: cartItem.quantity + 1 } : cartItem);
+        }
+        return [...prev, { ...item, quantity: 1, restaurantId }];
+    });
+  };
+
+  const handlePlaceOrder = () => {
+    if (cart.length === 0) return;
+    const newOrder: Order = {
+      id: Date.now(),
+      date: new Date().toISOString(),
+      items: [...cart],
+      total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
+      status: 'pending_pickup',
+    };
+    setOrders(prev => [newOrder, ...prev]);
+    setCart([]);
+    setNotifications(prev => [{
+        id: Date.now(),
+        message: `Tu pedido #${newOrder.id.toString().slice(-4)} ha sido realizado.`,
+        read: false,
+        date: new Date().toISOString()
+    }, ...prev]);
+    setActiveView('Pedidos');
+  };
+
+  const updateOrderStatus = (orderId: number, status: OrderStatus) => {
+    setOrders(orders => orders.map(o => o.id === orderId ? {...o, status} : o));
+  }
+
+  const handleSelectRestaurant = (id: number) => {
+    setSelectedRestaurantId(id);
+    setActiveView('Restaurant');
+  };
+
+  const saveRestaurant = (restaurant: Restaurant) => {
+    setRestaurants(prev => {
+        const exists = prev.some(r => r.id === restaurant.id);
+        if (exists) {
+            return prev.map(r => r.id === restaurant.id ? restaurant : r);
+        }
+        return [...prev, restaurant];
+    });
+    setAdminView('Dashboard');
+  };
+
+  const deleteRestaurant = (id: number) => {
+    setRestaurants(prev => prev.filter(r => r.id !== id));
+  }
+
+  const renderClientContent = () => {
+    const selectedRestaurant = restaurants.find(r => r.id === selectedRestaurantId);
+    switch (activeView) {
+      case 'Restaurant':
+        return selectedRestaurant ? <RestaurantPage restaurant={selectedRestaurant} onAddToCart={handleAddToCart} cartItems={cart} /> : <p>Restaurante no encontrado</p>;
+      case 'Pedidos':
+        return <OrdersPage orders={orders} />;
+      case 'Favoritos':
+        const favoriteRestaurants = restaurants.filter(r => favorites.includes(r.id));
+        return <FavoritesPage 
+                    restaurants={favoriteRestaurants} 
+                    onSelectRestaurant={handleSelectRestaurant}
+                    onToggleFavorite={handleToggleFavorite}
+                    allFavorites={favorites}
+                />;
+      case 'Perfil':
+        return <ProfilePage />;
+      case 'Carrito':
+        return <CartPage cartItems={cart} onPlaceOrder={handlePlaceOrder} onClearCart={() => setCart([])} setCart={setCart} />;
+      case 'Home':
+      default:
+        return <HomePage 
+                    restaurants={restaurants}
+                    onSelectRestaurant={handleSelectRestaurant}
+                    onToggleFavorite={handleToggleFavorite}
+                    favorites={favorites}
+                />;
+    }
+  };
 
   const renderContent = () => {
     switch (role) {
       case 'Administracion':
-        return <AdminDashboard />;
+        return <AdminDashboard currentView={adminView} setView={setAdminView} restaurants={restaurants} onSaveRestaurant={saveRestaurant} onDeleteRestaurant={deleteRestaurant} />;
       case 'Mensajero':
-        return <CourierDashboard />;
+        return <CourierDashboard orders={orders} onUpdateStatus={updateOrderStatus} />;
       case 'Cliente':
       default:
         return (
           <>
-            <Header />
-            <SearchAndFilters />
-            <main className="flex-grow overflow-y-auto pb-20 md:pb-4">
-              <RestaurantList />
+            <Header 
+                onNotificationsClick={() => setNotificationsOpen(true)} 
+                notificationCount={notifications.filter(n => !n.read).length} 
+                showBackButton={activeView === 'Restaurant'}
+                onBackClick={() => setActiveView('Home')}
+            />
+            <main className="flex-grow overflow-y-auto pb-24">
+              {renderClientContent()}
             </main>
-            <BottomNav />
+            <BottomNav 
+                activeTab={activeView} 
+                onTabChange={(view) => {
+                    setActiveView(view);
+                    setSelectedRestaurantId(null);
+                }} 
+                cartItemCount={cart.reduce((total, item) => total + item.quantity, 0)}
+            />
           </>
         );
     }
   };
 
   return (
-    <div className="bg-[#181818] text-white font-sans">
+    <div className="bg-[#181818] text-white font-sans antialiased">
       <div className="w-full max-w-6xl mx-auto bg-[#181818] relative flex flex-col min-h-screen">
-        <RoleSwitcher currentRole={role} onRoleChange={setRole} />
+        <RoleSwitcher currentRole={role} onRoleChange={(newRole) => {
+            setRole(newRole);
+            setActiveView('Home');
+            setAdminView('Dashboard');
+        }} />
         {renderContent()}
+        {isNotificationsOpen && (
+            <NotificationsPage 
+                notifications={notifications} 
+                onClose={() => setNotificationsOpen(false)}
+                onClear={() => setNotifications([])}
+            />
+        )}
+        {!isInstallDismissed && deferredPrompt && role === 'Cliente' && (
+            <InstallPWA
+                onInstall={() => {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then(() => {
+                        setDeferredPrompt(null);
+                        setIsInstallDismissed(true);
+                    });
+                }}
+                onDismiss={() => {
+                    setIsInstallDismissed(true);
+                }}
+            />
+        )}
       </div>
     </div>
   );

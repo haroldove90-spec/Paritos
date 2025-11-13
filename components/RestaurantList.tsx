@@ -1,61 +1,28 @@
-
 import React from 'react';
 import type { Restaurant } from '../types';
 import RestaurantCard from './RestaurantCard';
 
-const mockRestaurants: Restaurant[] = [
-  {
-    id: 1,
-    name: 'The Burger Joint',
-    imageUrl: 'https://picsum.photos/seed/burger/400/200',
-    rating: 4.7,
-    reviews: '500+',
-    deliveryTime: '25-35 min',
-    cuisine: 'Americana',
-    price: '$$',
-    isOpen: true,
-  },
-  {
-    id: 2,
-    name: 'The Taco Spot',
-    imageUrl: 'https://picsum.photos/seed/taco/400/200',
-    rating: 4.8,
-    reviews: '1k+',
-    deliveryTime: '20-30 min',
-    cuisine: 'Mexicana',
-    price: '$$',
-    isOpen: true,
-  },
-  {
-    id: 3,
-    name: 'Gourmet Pasta',
-    imageUrl: 'https://picsum.photos/seed/pasta/400/200',
-    rating: 4.5,
-    reviews: '200+',
-    deliveryTime: '30-40 min',
-    cuisine: 'Italiana',
-    price: '$$$',
-    isOpen: false,
-  },
-  {
-    id: 4,
-    name: 'Sushi Heaven',
-    imageUrl: 'https://picsum.photos/seed/sushi/400/200',
-    rating: 4.9,
-    reviews: '800+',
-    deliveryTime: '35-45 min',
-    cuisine: 'Japonesa',
-    price: '$$$',
-    isOpen: true,
-  },
-];
+interface RestaurantListProps {
+    restaurants: Restaurant[];
+    onSelectRestaurant: (id: number) => void;
+    onToggleFavorite: (restaurantId: number) => void;
+    favorites: number[];
+}
 
-
-const RestaurantList: React.FC = () => {
+const RestaurantList: React.FC<RestaurantListProps> = ({ restaurants, onSelectRestaurant, onToggleFavorite, favorites }) => {
   return (
-    <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {mockRestaurants.map((restaurant) => (
-        <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+    <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {restaurants.map((restaurant) => (
+        <RestaurantCard 
+            key={restaurant.id} 
+            restaurant={restaurant}
+            onClick={() => onSelectRestaurant(restaurant.id)}
+            onToggleFavorite={(e) => {
+                e.stopPropagation(); // Prevent card click when favoriting
+                onToggleFavorite(restaurant.id)
+            }}
+            isFavorite={favorites.includes(restaurant.id)}
+        />
       ))}
     </div>
   );

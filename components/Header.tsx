@@ -1,21 +1,45 @@
-
 import React from 'react';
 import { MenuIcon } from './icons/MenuIcon';
-import { SearchIcon } from './icons/SearchIcon';
+import { BellIcon } from './icons/BellIcon';
+import { ChevronLeftIcon } from './icons/ChevronLeftIcon';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+    onNotificationsClick: () => void;
+    notificationCount: number;
+    showBackButton?: boolean;
+    onBackClick?: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ onNotificationsClick, notificationCount, showBackButton, onBackClick }) => {
   return (
-    <header className="flex-shrink-0 flex justify-between items-center p-4 bg-[#181818]">
-      <button aria-label="Open menu">
-        <MenuIcon className="w-6 h-6 text-white" />
-      </button>
-      <div className="flex flex-col items-center">
-        <img src="https://appdesignmex.com/parito.png" alt="Paritos Logo" className="w-10 h-10 mb-1" />
-        <h1 className="font-bold text-2xl text-[#FFDF00]">Paritos</h1>
+    <header className="flex-shrink-0 flex items-center py-2 px-4 bg-[#181818] sticky top-0 z-10">
+      <div className="w-10">
+        {showBackButton ? (
+             <button onClick={onBackClick} aria-label="Go back" className="p-2 -ml-2">
+                <ChevronLeftIcon className="w-6 h-6 text-white" />
+            </button>
+        ) : (
+            <button aria-label="Open menu" className="p-2 -ml-2">
+                <MenuIcon className="w-6 h-6 text-white" />
+            </button>
+        )}
       </div>
-      <button aria-label="Search">
-        <SearchIcon className="w-6 h-6 text-white" />
-      </button>
+      <div className="flex-1 flex justify-center">
+        <div className="flex items-center space-x-2">
+            <img src="https://appdesignmex.com/parito.png" alt="Paritos Logo" className="w-9 h-9" />
+            <h1 className="font-bold text-xl text-[#FFDF00]">Paritos</h1>
+        </div>
+      </div>
+      <div className="w-10 flex justify-end">
+        <button onClick={onNotificationsClick} aria-label="View notifications" className="relative p-2 -mr-2">
+            <BellIcon className="w-6 h-6 text-white" />
+            {notificationCount > 0 && (
+                <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center border-2 border-[#181818]">
+                    {notificationCount}
+                </span>
+            )}
+        </button>
+      </div>
     </header>
   );
 };

@@ -1,38 +1,45 @@
-
 import React from 'react';
 import type { Restaurant } from '../types';
 import { StarIcon } from './icons/StarIcon';
+import { HeartIcon } from './icons/HeartIcon';
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
+  onClick: () => void;
+  onToggleFavorite: (e: React.MouseEvent) => void;
+  isFavorite: boolean;
 }
 
-const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant }) => {
+const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant, onClick, onToggleFavorite, isFavorite }) => {
   return (
-    <div className="bg-[#1e1e1e] rounded-lg overflow-hidden shadow-lg transform hover:scale-105 transition-transform duration-200">
+    <div onClick={onClick} className="bg-[#1e1e1e] rounded-xl overflow-hidden shadow-lg flex flex-col cursor-pointer transform hover:scale-[1.02] transition-transform duration-300 ease-in-out group">
       <div className="relative">
-        <img className="w-full h-32 object-cover" src={restaurant.imageUrl} alt={restaurant.name} />
-        {restaurant.isOpen && (
-           <div className="absolute top-2 right-2 bg-[#FFDF00] text-[#181818] text-xs font-bold px-3 py-1 rounded-full">
-            Abierto
-          </div>
-        )}
-         {!restaurant.isOpen && (
-           <div className="absolute top-2 right-2 bg-[#3A3D42] text-gray-300 text-xs font-bold px-3 py-1 rounded-full">
-            Cerrado
-          </div>
-        )}
-      </div>
-      <div className="p-4">
-        <h3 className="font-bold text-lg text-white mb-1">{restaurant.name}</h3>
-        <div className="flex items-center text-sm text-gray-300 mb-1">
-          <StarIcon className="w-5 h-5 text-[#FFDF00] mr-1" />
-          <span className="font-bold">{restaurant.rating}</span>
-          <span className="text-gray-400 ml-1">({restaurant.reviews})</span>
-          <span className="mx-2 text-gray-500">•</span>
-          <span>{restaurant.deliveryTime}</span>
+        <img className="w-full h-40 object-cover group-hover:brightness-75 transition-all duration-300" src={restaurant.imageUrl} alt={restaurant.name} />
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/60 via-transparent to-black/20"></div>
+        <div className={`absolute top-3 right-3 text-xs font-bold px-3 py-1 rounded-full ${restaurant.isOpen ? 'bg-[#FFDF00] text-[#181818]' : 'bg-gray-700 text-gray-300'}`}>
+            {restaurant.isOpen ? 'Abierto' : 'Cerrado'}
         </div>
-        <p className="text-sm text-gray-400">{restaurant.cuisine} • {restaurant.price}</p>
+        <button 
+            onClick={onToggleFavorite}
+            className="absolute top-3 left-3 bg-black bg-opacity-40 rounded-full p-2 transition-all duration-200 hover:bg-opacity-60 hover:scale-110"
+            aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+        >
+            <HeartIcon className={`w-5 h-5 transition-colors ${isFavorite ? 'text-red-500 fill-current' : 'text-white'}`} />
+        </button>
+        <div className="absolute bottom-3 left-4 text-white">
+            <h3 className="font-bold text-lg">{restaurant.name}</h3>
+            <p className="text-sm text-gray-300">{restaurant.cuisine}</p>
+        </div>
+      </div>
+      <div className="p-4 flex-grow flex items-center justify-between text-sm">
+        <div className="flex items-center text-gray-300">
+            <StarIcon className="w-5 h-5 text-[#FFDF00] mr-1.5" />
+            <span className="font-bold text-white">{restaurant.rating}</span>
+            <span className="text-gray-400 ml-1">({restaurant.reviews})</span>
+        </div>
+        <div className="text-right">
+             <span className="font-semibold text-gray-200">{restaurant.deliveryTime}</span>
+        </div>
       </div>
     </div>
   );

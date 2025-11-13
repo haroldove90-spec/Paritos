@@ -1,4 +1,3 @@
-
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
@@ -14,3 +13,8 @@ root.render(
     <App />
   </React.StrictMode>
 );
+
+// Add a small delay to ensure assets are loaded before hiding splash
+setTimeout(() => {
+    document.body.classList.add('loaded');
+}, 500);
