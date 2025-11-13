@@ -12,15 +12,32 @@ interface HomePageProps {
 
 const HomePage: React.FC<HomePageProps> = ({ restaurants, onSelectRestaurant, onToggleFavorite, favorites }) => {
     const [activeCategory, setActiveCategory] = useState<RestaurantCategory | 'All'>('All');
+    const [searchTerm, setSearchTerm] = useState('');
 
     const filteredRestaurants = useMemo(() => {
-        if (activeCategory === 'All') return restaurants;
-        return restaurants.filter(r => r.category === activeCategory);
-    }, [activeCategory, restaurants]);
+        let result = restaurants;
+
+        if (activeCategory !== 'All') {
+            result = result.filter(r => r.category === activeCategory);
+        }
+
+        if (searchTerm) {
+            result = result.filter(r => 
+                r.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+
+        return result;
+    }, [activeCategory, restaurants, searchTerm]);
 
     return (
         <>
-            <SearchAndFilters activeCategory={activeCategory} onCategoryChange={setActiveCategory} />
+            <SearchAndFilters 
+                activeCategory={activeCategory} 
+                onCategoryChange={setActiveCategory}
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+            />
             <RestaurantList 
                 restaurants={filteredRestaurants} 
                 onSelectRestaurant={onSelectRestaurant}

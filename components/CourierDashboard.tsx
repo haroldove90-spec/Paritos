@@ -1,15 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MenuIcon } from './icons/MenuIcon';
 import type { Order, OrderStatus } from '../types';
+import MapView from './courier/MapView';
 
 interface CourierDashboardProps {
     orders: Order[];
-    onUpdateStatus: (orderId: number, status: OrderStatus) => void;
+    onUpdateStatus: (orderId: number, status: OrderStatus, courierId?: number) => void;
 }
 
+const MOCK_COURIER_ID = 1; // Simulate being logged in as courier with ID 1
+
 const CourierDashboard: React.FC<CourierDashboardProps> = ({ orders, onUpdateStatus }) => {
+  const [isMapVisible, setMapVisible] = useState(false);
     
-  const activeOrder = orders.find(o => o.status === 'en_camino');
+  const activeOrder = orders.find(o => o.courierId === MOCK_COURIER_ID && o.status === 'en_camino');
   const pendingOrders = orders.filter(o => o.status === 'en_preparacion');
 
   return (
@@ -32,9 +36,10 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({ orders, onUpdateSta
                         <p className="text-sm text-gray-300">ID: #{activeOrder.id.toString().slice(-4)}</p>
                     </div>
                     <p className="text-sm text-gray-400 mt-1">Total: ${activeOrder.total.toFixed(2)}</p>
+                    <p className="text-sm text-gray-400 mt-1">Cliente: {activeOrder.customerName}</p>
                     <p className="text-sm text-gray-400 mt-1">Dirección: Av. Siempre Viva 123</p>
                     <div className="flex space-x-2 mt-4">
-                        <button className="w-full bg-[#3A3D42] text-white font-bold py-2 rounded-lg hover:bg-[#4a4d52] transition-colors">
+                        <button onClick={() => setMapVisible(true)} className="w-full bg-[#3A3D42] text-white font-bold py-2 rounded-lg hover:bg-[#4a4d52] transition-colors">
                             Ver en Mapa
                         </button>
                         <button 
@@ -63,7 +68,7 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({ orders, onUpdateSta
                                 <p className="text-sm text-gray-400">${order.total.toFixed(2)} • A 1.2km</p>
                             </div>
                             <button 
-                                onClick={() => onUpdateStatus(order.id, 'en_camino')}
+                                onClick={() => onUpdateStatus(order.id, 'en_camino', MOCK_COURIER_ID)}
                                 disabled={!!activeOrder}
                                 className="bg-[#FFDF00] text-[#181818] font-bold py-2 px-4 rounded-lg hover:scale-105 transition-transform duration-200 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:scale-100"
                             >
@@ -79,6 +84,7 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({ orders, onUpdateSta
             </div>
         </div>
       </main>
+      {isMapVisible && activeOrder && <MapView order={activeOrder} onClose={() => setMapVisible(false)} />}
     </div>
   );
 };

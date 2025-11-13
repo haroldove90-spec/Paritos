@@ -1,4 +1,4 @@
-import type { Restaurant } from '../types';
+import type { Restaurant, Courier } from '../types';
 
 export const mockRestaurants: Restaurant[] = [
   {
@@ -116,4 +116,10 @@ export const mockRestaurants: Restaurant[] = [
         { id: 802, name: 'Croissant', description: 'Croissant de mantequilla recién horneado.', price: 45, imageUrl: 'https://picsum.photos/seed/c2/200/200' },
     ]
   },
+];
+
+export const mockCouriers: Courier[] = [
+    { id: 1, name: 'Juan Perez', vehicle: 'Motocicleta', status: 'disponible', rating: 4.8, imageUrl: 'https://i.pravatar.cc/150?img=1' },
+    { id: 2, name: 'Maria Garcia', vehicle: 'Bicicleta', status: 'desconectado', rating: 4.9, imageUrl: 'https://i.pravatar.cc/150?img=2' },
+    { id: 3, name: 'Carlos Sanchez', vehicle: 'Motocicleta', status: 'disponible', rating: 4.7, imageUrl: 'https://i.pravatar.cc/150?img=3' },
 ];

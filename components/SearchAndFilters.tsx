@@ -8,9 +8,11 @@ const categories: RestaurantCategory[] = ['Vegetariano', 'Pizza', 'Sushi', 'Mexi
 interface SearchAndFiltersProps {
     activeCategory: RestaurantCategory | 'All';
     onCategoryChange: (category: RestaurantCategory | 'All') => void;
+    searchTerm: string;
+    onSearchChange: (term: string) => void;
 }
 
-const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({ activeCategory, onCategoryChange }) => {
+const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({ activeCategory, onCategoryChange, searchTerm, onSearchChange }) => {
 
   return (
     <div className="px-4 pb-2 flex-shrink-0 sticky top-[44px] bg-[#181818] z-10">
@@ -22,6 +24,8 @@ const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({ activeCategory, onC
           type="text"
           placeholder="Busca restaurantes o platos..."
           className="w-full bg-[#2a2a2a] text-white placeholder-gray-400 rounded-full py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-[#FFDF00] border border-transparent focus:border-[#FFDF00]"
+          value={searchTerm}
+          onChange={(e) => onSearchChange(e.target.value)}
         />
       </div>
       <div className="flex items-center space-x-2">

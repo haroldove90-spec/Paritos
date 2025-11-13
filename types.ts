@@ -37,6 +37,8 @@ export interface Order {
     items: CartItem[];
     total: number;
     status: OrderStatus;
+    customerName: string;
+    courierId: number | null;
 }
 
 export interface Notification {
@@ -44,4 +46,15 @@ export interface Notification {
     message: string;
     read: boolean;
     date: string;
+}
+
+export type CourierStatus = 'disponible' | 'en_entrega' | 'desconectado';
+
+export interface Courier {
+  id: number;
+  name: string;
+  vehicle: string; // e.g., 'Motocicleta', 'Bicicleta'
+  status: CourierStatus;
+  rating: number;
+  imageUrl: string;
 }

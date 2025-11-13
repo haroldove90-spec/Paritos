@@ -12,12 +12,12 @@ import CartPage from './pages/CartPage';
 import RestaurantPage from './pages/RestaurantPage';
 import NotificationsPage from './pages/NotificationsPage';
 import InstallPWA from './components/InstallPWA';
-import type { UserRole, Restaurant, Order, Notification, CartItem, MenuItem, OrderStatus } from './types';
+import type { UserRole, Restaurant, Order, Notification, CartItem, MenuItem, OrderStatus, Courier } from './types';
 import { useLocalStorage } from './hooks/useLocalStorage';
-import { mockRestaurants as initialRestaurants } from './data/mockData';
+import { mockRestaurants as initialRestaurants, mockCouriers as initialCouriers } from './data/mockData';
 
 type ActiveView = 'Inicio' | 'Pedidos' | 'Favoritos' | 'Perfil' | 'Carrito' | 'Restaurante';
-type AdminView = 'Dashboard' | 'Restaurantes';
+type AdminView = 'Dashboard' | 'Restaurantes' | 'Pedidos' | 'Mensajeros' | 'Analíticas' | 'Entregas';
 
 const App: React.FC = () => {
   const [role, setRole] = useLocalStorage<UserRole>('userRole', 'Cliente');
@@ -26,6 +26,7 @@ const App: React.FC = () => {
   const [selectedRestaurantId, setSelectedRestaurantId] = useState<number | null>(null);
 
   const [restaurants, setRestaurants] = useLocalStorage<Restaurant[]>('restaurants', initialRestaurants);
+  const [couriers, setCouriers] = useLocalStorage<Courier[]>('couriers', initialCouriers);
   const [cart, setCart] = useLocalStorage<CartItem[]>('cart', []);
   const [favorites, setFavorites] = useLocalStorage<number[]>('favorites', []);
   const [orders, setOrders] = useLocalStorage<Order[]>('orders', []);
@@ -70,6 +71,8 @@ const App: React.FC = () => {
       items: [...cart],
       total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
       status: 'en_preparacion',
+      customerName: 'Cliente Anónimo',
+      courierId: null,
     };
     setOrders(prev => [newOrder, ...prev]);
     setCart([]);
@@ -82,8 +85,24 @@ const App: React.FC = () => {
     setActiveView('Pedidos');
   };
 
-  const updateOrderStatus = (orderId: number, status: OrderStatus) => {
-    setOrders(orders => orders.map(o => o.id === orderId ? {...o, status} : o));
+  const updateOrderStatus = (orderId: number, status: OrderStatus, courierId?: number) => {
+    setOrders(prevOrders => {
+        const orderToUpdate = prevOrders.find(o => o.id === orderId);
+        if (!orderToUpdate) return prevOrders;
+
+        // If a courier takes the order
+        if (status === 'en_camino' && courierId) {
+            setCouriers(prevCouriers => prevCouriers.map(c => c.id === courierId ? {...c, status: 'en_entrega'} : c));
+            return prevOrders.map(o => o.id === orderId ? {...o, status, courierId} : o);
+        }
+        
+        // If an order is delivered
+        if (status === 'entregado' && orderToUpdate.courierId) {
+             setCouriers(prevCouriers => prevCouriers.map(c => c.id === orderToUpdate.courierId ? {...c, status: 'disponible'} : c));
+        }
+
+        return prevOrders.map(o => o.id === orderId ? {...o, status} : o);
+    });
   }
 
   const handleSelectRestaurant = (id: number) => {
@@ -104,6 +123,20 @@ const App: React.FC = () => {
 
   const deleteRestaurant = (id: number) => {
     setRestaurants(prev => prev.filter(r => r.id !== id));
+  }
+
+  const saveCourier = (courier: Courier) => {
+     setCouriers(prev => {
+        const exists = prev.some(c => c.id === courier.id);
+        if (exists) {
+            return prev.map(c => c.id === courier.id ? courier : c);
+        }
+        return [...prev, courier];
+    });
+  }
+
+  const deleteCourier = (id: number) => {
+    setCouriers(prev => prev.filter(c => c.id !== id));
   }
 
   const renderClientContent = () => {
@@ -139,7 +172,17 @@ const App: React.FC = () => {
   const renderContent = () => {
     switch (role) {
       case 'Administracion':
-        return <AdminDashboard currentView={adminView} setView={setAdminView} restaurants={restaurants} onSaveRestaurant={saveRestaurant} onDeleteRestaurant={deleteRestaurant} />;
+        return <AdminDashboard 
+                    currentView={adminView} 
+                    setView={setAdminView} 
+                    restaurants={restaurants} 
+                    onSaveRestaurant={saveRestaurant} 
+                    onDeleteRestaurant={deleteRestaurant} 
+                    orders={orders}
+                    couriers={couriers}
+                    onSaveCourier={saveCourier}
+                    onDeleteCourier={deleteCourier}
+                />;
       case 'Mensajero':
         return <CourierDashboard orders={orders} onUpdateStatus={updateOrderStatus} />;
       case 'Cliente':
