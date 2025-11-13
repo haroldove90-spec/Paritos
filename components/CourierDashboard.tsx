@@ -14,7 +14,9 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({ orders, onUpdateSta
   const [isMapVisible, setMapVisible] = useState(false);
     
   const activeOrder = orders.find(o => o.courierId === MOCK_COURIER_ID && o.status === 'en_camino');
-  const pendingOrders = orders.filter(o => o.status === 'en_preparacion');
+  const readyForPickupOrders = orders.filter(o => o.status === 'en_preparacion');
+  const pendingOrders = orders.filter(o => o.status === 'pendiente');
+
 
   return (
     <div className="flex flex-col h-full text-white">
@@ -26,7 +28,7 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({ orders, onUpdateSta
         <button><MenuIcon className="w-6 h-6 text-white" /></button>
       </header>
 
-      <main className="flex-grow overflow-y-auto p-4 space-y-6 md:space-y-0 md:grid md:grid-cols-2 md:gap-6">
+      <main className="flex-grow overflow-y-auto p-4 space-y-6">
         <div>
             <h2 className="text-lg font-semibold text-[#FFDF00] mb-3">Pedido Activo</h2>
             {activeOrder ? (
@@ -58,8 +60,35 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({ orders, onUpdateSta
         </div>
 
         <div>
+            <h2 className="text-lg font-semibold text-gray-300 mb-3">Listo para Recoger ({readyForPickupOrders.length})</h2>
+            <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
+                {readyForPickupOrders.length > 0 ? (
+                    readyForPickupOrders.map(order => (
+                         <div key={order.id} className="bg-[#1e1e1e] p-4 rounded-lg flex justify-between items-center">
+                            <div>
+                                <p className="font-bold">{order.items[0]?.name} y más</p>
+                                <p className="text-sm text-gray-400">${order.total.toFixed(2)}</p>
+                            </div>
+                            <button 
+                                onClick={() => onUpdateStatus(order.id, 'en_camino', MOCK_COURIER_ID)}
+                                disabled={!!activeOrder}
+                                className="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-500 disabled:cursor-not-allowed"
+                            >
+                                Iniciar Entrega
+                            </button>
+                        </div>
+                    ))
+                ) : (
+                    <div className="bg-[#1e1e1e] p-4 rounded-lg text-center text-gray-400">
+                        No hay pedidos listos para recoger.
+                    </div>
+                )}
+            </div>
+        </div>
+
+        <div>
             <h2 className="text-lg font-semibold text-gray-300 mb-3">Pedidos Pendientes ({pendingOrders.length})</h2>
-            <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+            <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
                 {pendingOrders.length > 0 ? (
                     pendingOrders.map(order => (
                          <div key={order.id} className="bg-[#1e1e1e] p-4 rounded-lg flex justify-between items-center">
@@ -68,7 +97,7 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({ orders, onUpdateSta
                                 <p className="text-sm text-gray-400">${order.total.toFixed(2)} • A 1.2km</p>
                             </div>
                             <button 
-                                onClick={() => onUpdateStatus(order.id, 'en_camino', MOCK_COURIER_ID)}
+                                onClick={() => onUpdateStatus(order.id, 'en_preparacion')}
                                 disabled={!!activeOrder}
                                 className="bg-[#FFDF00] text-[#181818] font-bold py-2 px-4 rounded-lg hover:scale-105 transition-transform duration-200 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:scale-100"
                             >

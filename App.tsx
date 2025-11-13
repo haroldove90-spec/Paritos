@@ -22,7 +22,7 @@ type AdminView = 'Dashboard' | 'Restaurantes' | 'Pedidos' | 'Mensajeros' | 'Anal
 const App: React.FC = () => {
   const [role, setRole] = useLocalStorage<UserRole>('userRole', 'Cliente');
   const [activeView, setActiveView] = useState<ActiveView>('Inicio');
-  const [adminView, setAdminView] = useState<AdminView>('Dashboard');
+  const [adminView, setAdminView] = useState<AdminView>('Pedidos');
   const [selectedRestaurantId, setSelectedRestaurantId] = useState<number | null>(null);
 
   const [restaurants, setRestaurants] = useLocalStorage<Restaurant[]>('restaurants', initialRestaurants);
@@ -70,9 +70,10 @@ const App: React.FC = () => {
       date: new Date().toISOString(),
       items: [...cart],
       total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
-      status: 'en_preparacion',
+      status: 'pendiente',
       customerName: 'Cliente Anónimo',
       courierId: null,
+      restaurantId: cart[0].restaurantId,
     };
     setOrders(prev => [newOrder, ...prev]);
     setCart([]);
@@ -90,18 +91,44 @@ const App: React.FC = () => {
         const orderToUpdate = prevOrders.find(o => o.id === orderId);
         if (!orderToUpdate) return prevOrders;
 
-        // If a courier takes the order
-        if (status === 'en_camino' && courierId) {
-            setCouriers(prevCouriers => prevCouriers.map(c => c.id === courierId ? {...c, status: 'en_entrega'} : c));
-            return prevOrders.map(o => o.id === orderId ? {...o, status, courierId} : o);
-        }
-        
-        // If an order is delivered
-        if (status === 'entregado' && orderToUpdate.courierId) {
-             setCouriers(prevCouriers => prevCouriers.map(c => c.id === orderToUpdate.courierId ? {...c, status: 'disponible'} : c));
+        // Create notification based on status change
+        let notificationMessage = '';
+        const orderIdShort = orderId.toString().slice(-4);
+
+        switch (status) {
+            case 'en_preparacion':
+                notificationMessage = `El pedido #${orderIdShort} ha sido aceptado y se está preparando.`;
+                break;
+            case 'en_camino':
+                notificationMessage = `¡Tu pedido #${orderIdShort} ya está en camino!`;
+                break;
+            case 'entregado':
+                notificationMessage = `El pedido #${orderIdShort} ha sido entregado. ¡Buen provecho!`;
+                break;
         }
 
-        return prevOrders.map(o => o.id === orderId ? {...o, status} : o);
+        if (notificationMessage) {
+            setNotifications(prev => [{
+                id: Date.now(),
+                message: notificationMessage,
+                read: false,
+                date: new Date().toISOString()
+            }, ...prev]);
+        }
+        
+        // Update courier and order status
+        let updatedOrders = [...prevOrders];
+        if (status === 'en_camino' && courierId) {
+            setCouriers(prevCouriers => prevCouriers.map(c => c.id === courierId ? {...c, status: 'en_entrega'} : c));
+            updatedOrders = prevOrders.map(o => o.id === orderId ? {...o, status, courierId} : o);
+        } else if (status === 'entregado' && orderToUpdate.courierId) {
+             setCouriers(prevCouriers => prevCouriers.map(c => c.id === orderToUpdate.courierId ? {...c, status: 'disponible'} : c));
+             updatedOrders = prevOrders.map(o => o.id === orderId ? {...o, status} : o);
+        } else {
+            updatedOrders = prevOrders.map(o => o.id === orderId ? {...o, status} : o);
+        }
+        
+        return updatedOrders;
     });
   }
 
@@ -145,7 +172,14 @@ const App: React.FC = () => {
       case 'Restaurante':
         return selectedRestaurant ? <RestaurantPage restaurant={selectedRestaurant} onAddToCart={handleAddToCart} cartItems={cart} /> : <p>Restaurante no encontrado</p>;
       case 'Pedidos':
-        return <OrdersPage orders={orders} />;
+        return <OrdersPage 
+                    orders={orders} 
+                    restaurants={restaurants} 
+                    onReorder={(items) => {
+                        setCart(items);
+                        setActiveView('Carrito');
+                    }}
+                />;
       case 'Favoritos':
         const favoriteRestaurants = restaurants.filter(r => favorites.includes(r.id));
         return <FavoritesPage 
@@ -179,6 +213,7 @@ const App: React.FC = () => {
                     onSaveRestaurant={saveRestaurant} 
                     onDeleteRestaurant={deleteRestaurant} 
                     orders={orders}
+                    onUpdateOrderStatus={updateOrderStatus}
                     couriers={couriers}
                     onSaveCourier={saveCourier}
                     onDeleteCourier={deleteCourier}
@@ -217,7 +252,7 @@ const App: React.FC = () => {
         <RoleSwitcher currentRole={role} onRoleChange={(newRole) => {
             setRole(newRole);
             setActiveView('Inicio');
-            setAdminView('Dashboard');
+            setAdminView('Pedidos');
         }} />
         {renderContent()}
         {isNotificationsOpen && (

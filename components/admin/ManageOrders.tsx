@@ -1,18 +1,35 @@
 import React from 'react';
-import type { Order } from '../../types';
+import type { Order, OrderStatus } from '../../types';
 
 interface ManageOrdersProps {
     onBack: () => void;
     orders: Order[];
+    onUpdateOrderStatus: (orderId: number, status: OrderStatus) => void;
 }
 
 const statusMap = {
+    pendiente: { text: 'Pendiente', color: 'text-gray-400', bg: 'bg-gray-400/10' },
     en_preparacion: { text: 'Preparando', color: 'text-orange-400', bg: 'bg-orange-400/10' },
     en_camino: { text: 'En Camino', color: 'text-blue-400', bg: 'bg-blue-400/10' },
     entregado: { text: 'Entregado', color: 'text-green-400', bg: 'bg-green-400/10' },
 }
 
-const ManageOrders: React.FC<ManageOrdersProps> = ({ onBack, orders }) => {
+const ManageOrders: React.FC<ManageOrdersProps> = ({ onBack, orders, onUpdateOrderStatus }) => {
+
+    const getNextAction = (order: Order) => {
+        const buttonClass = "bg-[#FFDF00] text-[#181818] font-bold py-2 px-4 rounded-lg text-sm transform hover:scale-105 transition-transform duration-200";
+        switch (order.status) {
+            case 'pendiente':
+                return <button onClick={() => onUpdateOrderStatus(order.id, 'en_preparacion')} className={buttonClass}>Mover a Preparación</button>;
+            case 'en_preparacion':
+                return <button onClick={() => onUpdateOrderStatus(order.id, 'en_camino')} className={buttonClass}>Mover a En Camino</button>;
+            case 'en_camino':
+                return <button onClick={() => onUpdateOrderStatus(order.id, 'entregado')} className={buttonClass}>Marcar como Entregado</button>;
+            default:
+                return null;
+        }
+    };
+
     return (
         <main className="flex-grow overflow-y-auto p-6">
             <div className="flex justify-between items-center mb-6">
@@ -65,6 +82,15 @@ const ManageOrders: React.FC<ManageOrdersProps> = ({ onBack, orders }) => {
                                     Total: ${order.total.toFixed(2)}
                                 </p>
                             </div>
+
+                            {order.status !== 'entregado' && (
+                                <div className="border-t border-[#3A3D42] mt-3 pt-3 flex justify-between items-center">
+                                    <p className="text-sm font-semibold text-gray-300">Acciones:</p>
+                                    <div>
+                                        {getNextAction(order)}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>

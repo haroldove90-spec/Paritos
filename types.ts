@@ -29,7 +29,7 @@ export interface CartItem extends MenuItem {
     restaurantId: number;
 }
 
-export type OrderStatus = 'en_preparacion' | 'en_camino' | 'entregado';
+export type OrderStatus = 'pendiente' | 'en_preparacion' | 'en_camino' | 'entregado';
 
 export interface Order {
     id: number;
@@ -39,6 +39,7 @@ export interface Order {
     status: OrderStatus;
     customerName: string;
     courierId: number | null;
+    restaurantId: number;
 }
 
 export interface Notification {
