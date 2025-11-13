@@ -77,12 +77,25 @@ const App: React.FC = () => {
     };
     setOrders(prev => [newOrder, ...prev]);
     setCart([]);
-    setNotifications(prev => [{
-        id: Date.now(),
-        message: `Tu pedido #${newOrder.id.toString().slice(-4)} ha sido realizado.`,
-        read: false,
-        date: new Date().toISOString()
-    }, ...prev]);
+    
+    const orderIdShort = newOrder.id.toString().slice(-4);
+    const timestamp = new Date().toISOString();
+    const notificationsToAdd: Notification[] = [
+      {
+          id: Date.now(),
+          message: `Tu pedido #${orderIdShort} ha sido realizado.`,
+          read: false,
+          date: timestamp
+      },
+      {
+          id: Date.now() + 1,
+          message: `Admin: Nuevo pedido #${orderIdShort} recibido por $${newOrder.total.toFixed(2)}.`,
+          read: false,
+          date: timestamp
+      }
+    ];
+
+    setNotifications(prev => [...notificationsToAdd, ...prev]);
     setActiveView('Pedidos');
   };
 
@@ -91,32 +104,35 @@ const App: React.FC = () => {
         const orderToUpdate = prevOrders.find(o => o.id === orderId);
         if (!orderToUpdate) return prevOrders;
 
-        // Create notification based on status change
-        let notificationMessage = '';
+        // --- Notification Logic ---
         const orderIdShort = orderId.toString().slice(-4);
+        const timestamp = new Date().toISOString();
+        const notificationsToAdd: Notification[] = [];
+        let notifId = Date.now();
+        
+        const messages: Partial<Record<OrderStatus, { client: string; admin: string }>> = {
+            'en_preparacion': {
+                client: `El pedido #${orderIdShort} ha sido aceptado y se está preparando.`,
+                admin: `Admin: Pedido #${orderIdShort} movido a preparación.`
+            },
+            'en_camino': {
+                client: `¡Tu pedido #${orderIdShort} ya está en camino!`,
+                admin: `Admin: Pedido #${orderIdShort} está en camino.`
+            },
+            'entregado': {
+                client: `El pedido #${orderIdShort} ha sido entregado. ¡Buen provecho!`,
+                admin: `Admin: Pedido #${orderIdShort} completado.`
+            }
+        };
 
-        switch (status) {
-            case 'en_preparacion':
-                notificationMessage = `El pedido #${orderIdShort} ha sido aceptado y se está preparando.`;
-                break;
-            case 'en_camino':
-                notificationMessage = `¡Tu pedido #${orderIdShort} ya está en camino!`;
-                break;
-            case 'entregado':
-                notificationMessage = `El pedido #${orderIdShort} ha sido entregado. ¡Buen provecho!`;
-                break;
-        }
-
-        if (notificationMessage) {
-            setNotifications(prev => [{
-                id: Date.now(),
-                message: notificationMessage,
-                read: false,
-                date: new Date().toISOString()
-            }, ...prev]);
+        const statusMessages = messages[status];
+        if (statusMessages) {
+            notificationsToAdd.push({ id: notifId++, message: statusMessages.client, read: false, date: timestamp });
+            notificationsToAdd.push({ id: notifId++, message: statusMessages.admin, read: false, date: timestamp });
+            setNotifications(prev => [...notificationsToAdd, ...prev]);
         }
         
-        // Update courier and order status
+        // --- State Update Logic ---
         let updatedOrders = [...prevOrders];
         if (status === 'en_camino' && courierId) {
             setCouriers(prevCouriers => prevCouriers.map(c => c.id === courierId ? {...c, status: 'en_entrega'} : c));
@@ -204,6 +220,8 @@ const App: React.FC = () => {
   };
 
   const renderContent = () => {
+    const unreadNotifications = notifications.filter(n => !n.read).length;
+
     switch (role) {
       case 'Administracion':
         return <AdminDashboard 
@@ -217,6 +235,8 @@ const App: React.FC = () => {
                     couriers={couriers}
                     onSaveCourier={saveCourier}
                     onDeleteCourier={deleteCourier}
+                    notificationCount={unreadNotifications}
+                    onNotificationsClick={() => setNotificationsOpen(true)}
                 />;
       case 'Mensajero':
         return <CourierDashboard orders={orders} onUpdateStatus={updateOrderStatus} />;
@@ -226,7 +246,7 @@ const App: React.FC = () => {
           <>
             <Header 
                 onNotificationsClick={() => setNotificationsOpen(true)} 
-                notificationCount={notifications.filter(n => !n.read).length} 
+                notificationCount={unreadNotifications} 
                 showBackButton={activeView === 'Restaurante'}
                 onBackClick={() => setActiveView('Inicio')}
             />

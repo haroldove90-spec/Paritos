@@ -1,6 +1,7 @@
 import React from 'react';
 import { MenuIcon } from './icons/MenuIcon';
 import { SearchIcon } from './icons/SearchIcon';
+import { BellIcon } from './icons/BellIcon';
 import ManageRestaurants from './admin/ManageRestaurants';
 import ManageOrders from './admin/ManageOrders';
 import ManageCouriers from './admin/ManageCouriers';
@@ -26,6 +27,8 @@ interface AdminDashboardProps {
     couriers: Courier[];
     onSaveCourier: (courier: Courier) => void;
     onDeleteCourier: (id: number) => void;
+    notificationCount: number;
+    onNotificationsClick: () => void;
 }
 
 const AdminCard: React.FC<{
@@ -63,7 +66,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     currentView, setView, 
     restaurants, onSaveRestaurant, onDeleteRestaurant, 
     orders, onUpdateOrderStatus,
-    couriers, onSaveCourier, onDeleteCourier
+    couriers, onSaveCourier, onDeleteCourier,
+    notificationCount, onNotificationsClick
 }) => {
 
   const DashboardHome: React.FC = () => {
@@ -85,9 +89,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     ];
     
     return (
-     <main className="flex-grow overflow-y-auto p-6 space-y-6">
+     <main className="flex-grow overflow-y-auto p-6 space-y-6 animate-fade-in">
         <div className="text-left mb-4">
-            <h2 className="text-3xl font-bold text-white">Panel de Control</h2>
+            <h2 className="text-3xl font-bold text-white">Hola, Administrador</h2>
             <p className="text-md text-gray-400">Una vista rápida de las operaciones de Paritos.</p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
@@ -148,15 +152,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         return (
                             <div 
                                 key={order.id}
-                                className="absolute transform -translate-x-1/2 -translate-y-full flex flex-col items-center cursor-pointer"
+                                className="absolute transform -translate-x-1/2 -translate-y-full flex flex-col items-center cursor-pointer group"
                                 style={{ top: position.top, left: position.left }}
                                 title={`${courier.name} - Pedido #${order.id.toString().slice(-4)}`}
                             >
-                                <div className="px-2 py-1 bg-[#181818] border-2 border-blue-400 rounded-lg text-white text-xs font-bold shadow-lg transition-transform duration-200 hover:scale-110">
+                                <div className="px-2 py-1 bg-[#181818] border-2 border-blue-400 rounded-lg text-white text-xs font-bold shadow-lg transition-transform duration-200 group-hover:scale-110 group-hover:border-[#FFDF00] group-hover:z-10">
                                     {courier.name.split(' ')[0]}
                                 </div>
-                                <MapPinIcon className="w-8 h-8 text-blue-400 drop-shadow-lg" />
-                                <div className="w-3 h-3 bg-blue-400 rounded-full -mt-2 opacity-50 shadow-md"></div>
+                                <MapPinIcon className="w-8 h-8 text-blue-400 drop-shadow-lg group-hover:text-[#FFDF00] transition-colors duration-200" />
+                                <div className="w-3 h-3 bg-blue-400 rounded-full -mt-2 opacity-50 shadow-md animate-pulse group-hover:bg-[#FFDF00]"></div>
                             </div>
                         );
                     })
@@ -186,9 +190,21 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <h1 className="font-bold text-2xl text-white">Panel de Administrador</h1>
           <p className="text-sm text-gray-400">Paritos</p>
         </div>
-        <div className="flex items-center space-x-4">
-            <button><SearchIcon className="w-6 h-6 text-white" /></button>
-            <button><MenuIcon className="w-6 h-6 text-white" /></button>
+        <div className="flex items-center space-x-2">
+            <button className="p-2 rounded-full hover:bg-[#2a2a2a] transition-colors" aria-label="Buscar">
+                <SearchIcon className="w-6 h-6 text-gray-300" />
+            </button>
+            <button onClick={onNotificationsClick} className="relative p-2 rounded-full hover:bg-[#2a2a2a] transition-colors" aria-label="Ver notificaciones">
+                <BellIcon className="w-6 h-6 text-gray-300" />
+                {notificationCount > 0 && (
+                    <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center border-2 border-[#181818]">
+                        {notificationCount}
+                    </span>
+                )}
+            </button>
+            <button className="p-2 rounded-full hover:bg-[#2a2a2a] transition-colors" aria-label="Abrir menú">
+                <MenuIcon className="w-6 h-6 text-gray-300" />
+            </button>
         </div>
       </header>
 
@@ -198,6 +214,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {currentView === 'Mensajeros' && <ManageCouriers onBack={() => setView('Dashboard')} couriers={couriers} onSave={onSaveCourier} onDelete={onDeleteCourier} />}
       {currentView === 'Analíticas' && <ManageAnalytics onBack={() => setView('Dashboard')} orders={orders} restaurants={restaurants} couriers={couriers} />}
       {currentView === 'Entregas' && <MonitorDeliveries onBack={() => setView('Dashboard')} orders={orders} couriers={couriers} />}
+      <style>{`
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
+      `}</style>
     </div>
   );
 };
