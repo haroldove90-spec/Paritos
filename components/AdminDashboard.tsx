@@ -19,7 +19,7 @@ const AdminDashboard: React.FC = () => {
 
       <main className="flex-grow overflow-y-auto p-4 space-y-4">
         <h2 className="text-lg font-semibold text-gray-300">Gestión General</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-[#3A3D42] p-4 rounded-lg flex flex-col items-center justify-center aspect-square transform hover:scale-105 transition-transform duration-200">
                 <span className="text-4xl">🍔</span>
                 <span className="mt-2 font-bold text-center">Gestionar Restaurantes</span>

@@ -13,7 +13,7 @@ const CourierDashboard: React.FC = () => {
         <button><MenuIcon className="w-6 h-6 text-white" /></button>
       </header>
 
-      <main className="flex-grow overflow-y-auto p-4 space-y-6">
+      <main className="flex-grow overflow-y-auto p-4 space-y-6 md:space-y-0 md:grid md:grid-cols-2 md:gap-6">
         <div>
             <h2 className="text-lg font-semibold text-[#FFDF00] mb-2">Pedido Activo</h2>
             <div className="bg-[#3A3D42] p-4 rounded-lg">

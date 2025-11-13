@@ -38,7 +38,7 @@ const BottomNav: React.FC = () => {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-[#181818] border-t border-[#3A3D42] shadow-lg">
-       <div className="max-w-sm mx-auto flex justify-around items-center h-16">
+       <div className="w-full max-w-6xl mx-auto flex justify-around items-center h-16">
         <NavItem icon={HomeIcon} label="Inicio" isActive={activeTab === 'Inicio'} onClick={() => setActiveTab('Inicio')} />
         <NavItem icon={OrdersIcon} label="Pedidos" isActive={activeTab === 'Pedidos1'} onClick={() => setActiveTab('Pedidos1')} />
         <NavItem icon={RunningIcon} label="Pedidos" isActive={activeTab === 'Pedidos2'} onClick={() => setActiveTab('Pedidos2')} />

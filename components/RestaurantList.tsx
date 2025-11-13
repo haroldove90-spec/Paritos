@@ -53,11 +53,10 @@ const mockRestaurants: Restaurant[] = [
 
 const RestaurantList: React.FC = () => {
   return (
-    <div className="px-4 space-y-4">
+    <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {mockRestaurants.map((restaurant) => (
         <RestaurantCard key={restaurant.id} restaurant={restaurant} />
       ))}
-       <div className="h-4"></div>
     </div>
   );
 };

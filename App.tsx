@@ -24,7 +24,7 @@ const App: React.FC = () => {
           <>
             <Header />
             <SearchAndFilters />
-            <main className="flex-grow overflow-y-auto pb-16">
+            <main className="flex-grow overflow-y-auto pb-20 md:pb-4">
               <RestaurantList />
             </main>
             <BottomNav />
@@ -35,9 +35,7 @@ const App: React.FC = () => {
 
   return (
     <div className="bg-[#181818] text-white font-sans">
-      {/* The max-w-sm and mx-auto classes make the design responsive 
-          by centering the content in a mobile-sized container on larger screens. */}
-      <div className="max-w-sm mx-auto bg-[#181818] relative flex flex-col h-screen">
+      <div className="w-full max-w-6xl mx-auto bg-[#181818] relative flex flex-col min-h-screen">
         <RoleSwitcher currentRole={role} onRoleChange={setRole} />
         {renderContent()}
       </div>
