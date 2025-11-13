@@ -6,9 +6,9 @@ interface OrdersPageProps {
 }
 
 const statusMap = {
-    pending_pickup: { text: 'Preparando', color: 'text-orange-400' },
-    out_for_delivery: { text: 'En camino', color: 'text-blue-400' },
-    delivered: { text: 'Entregado', color: 'text-green-400' },
+    en_preparacion: { text: 'Preparando', color: 'text-orange-400' },
+    en_camino: { text: 'En camino', color: 'text-blue-400' },
+    entregado: { text: 'Entregado', color: 'text-green-400' },
 }
 
 const OrdersPage: React.FC<OrdersPageProps> = ({ orders }) => {

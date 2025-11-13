@@ -34,7 +34,7 @@ const ManageRestaurants: React.FC<ManageRestaurantsProps> = ({ onBack, restauran
         <main className="flex-grow overflow-y-auto p-6">
             <div className="flex justify-between items-center mb-6">
                 <div>
-                    <button onClick={onBack} className="text-sm text-[#FFDF00] hover:underline mb-1">&larr; Volver al Dashboard</button>
+                    <button onClick={onBack} className="text-sm text-[#FFDF00] hover:underline mb-1">&larr; Volver al Panel</button>
                     <h2 className="text-2xl font-bold text-white">Gestionar Restaurantes</h2>
                 </div>
                 <button onClick={handleAddNew} className="bg-[#FFDF00] text-[#181818] font-bold py-2 px-4 rounded-lg flex items-center space-x-2 hover:scale-105 transition-transform">

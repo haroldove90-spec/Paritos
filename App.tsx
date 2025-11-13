@@ -16,12 +16,12 @@ import type { UserRole, Restaurant, Order, Notification, CartItem, MenuItem, Ord
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { mockRestaurants as initialRestaurants } from './data/mockData';
 
-type ActiveView = 'Home' | 'Pedidos' | 'Favoritos' | 'Perfil' | 'Carrito' | 'Restaurant';
-type AdminView = 'Dashboard' | 'Restaurants';
+type ActiveView = 'Inicio' | 'Pedidos' | 'Favoritos' | 'Perfil' | 'Carrito' | 'Restaurante';
+type AdminView = 'Dashboard' | 'Restaurantes';
 
 const App: React.FC = () => {
   const [role, setRole] = useLocalStorage<UserRole>('userRole', 'Cliente');
-  const [activeView, setActiveView] = useState<ActiveView>('Home');
+  const [activeView, setActiveView] = useState<ActiveView>('Inicio');
   const [adminView, setAdminView] = useState<AdminView>('Dashboard');
   const [selectedRestaurantId, setSelectedRestaurantId] = useState<number | null>(null);
 
@@ -69,7 +69,7 @@ const App: React.FC = () => {
       date: new Date().toISOString(),
       items: [...cart],
       total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
-      status: 'pending_pickup',
+      status: 'en_preparacion',
     };
     setOrders(prev => [newOrder, ...prev]);
     setCart([]);
@@ -88,7 +88,7 @@ const App: React.FC = () => {
 
   const handleSelectRestaurant = (id: number) => {
     setSelectedRestaurantId(id);
-    setActiveView('Restaurant');
+    setActiveView('Restaurante');
   };
 
   const saveRestaurant = (restaurant: Restaurant) => {
@@ -109,7 +109,7 @@ const App: React.FC = () => {
   const renderClientContent = () => {
     const selectedRestaurant = restaurants.find(r => r.id === selectedRestaurantId);
     switch (activeView) {
-      case 'Restaurant':
+      case 'Restaurante':
         return selectedRestaurant ? <RestaurantPage restaurant={selectedRestaurant} onAddToCart={handleAddToCart} cartItems={cart} /> : <p>Restaurante no encontrado</p>;
       case 'Pedidos':
         return <OrdersPage orders={orders} />;
@@ -125,7 +125,7 @@ const App: React.FC = () => {
         return <ProfilePage />;
       case 'Carrito':
         return <CartPage cartItems={cart} onPlaceOrder={handlePlaceOrder} onClearCart={() => setCart([])} setCart={setCart} />;
-      case 'Home':
+      case 'Inicio':
       default:
         return <HomePage 
                     restaurants={restaurants}
@@ -149,8 +149,8 @@ const App: React.FC = () => {
             <Header 
                 onNotificationsClick={() => setNotificationsOpen(true)} 
                 notificationCount={notifications.filter(n => !n.read).length} 
-                showBackButton={activeView === 'Restaurant'}
-                onBackClick={() => setActiveView('Home')}
+                showBackButton={activeView === 'Restaurante'}
+                onBackClick={() => setActiveView('Inicio')}
             />
             <main className="flex-grow overflow-y-auto pb-24">
               {renderClientContent()}
@@ -173,7 +173,7 @@ const App: React.FC = () => {
       <div className="w-full max-w-6xl mx-auto bg-[#181818] relative flex flex-col min-h-screen">
         <RoleSwitcher currentRole={role} onRoleChange={(newRole) => {
             setRole(newRole);
-            setActiveView('Home');
+            setActiveView('Inicio');
             setAdminView('Dashboard');
         }} />
         {renderContent()}

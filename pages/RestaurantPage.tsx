@@ -43,7 +43,7 @@ const RestaurantPage: React.FC<RestaurantPageProps> = ({ restaurant, onAddToCart
                              <button 
                                 onClick={() => onAddToCart(item, restaurant.id)}
                                 className="bg-[#FFDF00] text-[#181818] rounded-full p-2 transform hover:scale-110 transition-transform duration-200 flex items-center justify-center relative"
-                                aria-label={`Add ${item.name} to cart`}
+                                aria-label={`Añadir ${item.name} al carrito`}
                              >
                                 <PlusIcon className="w-5 h-5" />
                                 {itemInCart && (

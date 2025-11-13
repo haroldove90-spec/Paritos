@@ -4,7 +4,7 @@ import { SearchIcon } from './icons/SearchIcon';
 import ManageRestaurants from './admin/ManageRestaurants';
 import type { Restaurant } from '../types';
 
-type AdminView = 'Dashboard' | 'Restaurants';
+type AdminView = 'Dashboard' | 'Restaurantes';
 
 interface AdminDashboardProps {
     currentView: AdminView;
@@ -20,7 +20,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentView, setView, r
      <main className="flex-grow overflow-y-auto p-6 space-y-6">
         <h2 className="text-xl font-semibold text-gray-300">Gestión General</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <button onClick={() => setView('Restaurants')} className="bg-[#2a2a2a] hover:bg-[#3a3a3a] p-4 rounded-xl flex flex-col items-center justify-center aspect-square transform hover:-translate-y-1 transition-all duration-200 ease-in-out shadow-lg">
+            <button onClick={() => setView('Restaurantes')} className="bg-[#2a2a2a] hover:bg-[#3a3a3a] p-4 rounded-xl flex flex-col items-center justify-center aspect-square transform hover:-translate-y-1 transition-all duration-200 ease-in-out shadow-lg">
                 <span className="text-5xl">🍔</span>
                 <span className="mt-2 font-bold text-center text-white">Gestionar Restaurantes</span>
             </button>
@@ -44,7 +44,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentView, setView, r
     <div className="flex flex-col h-full text-white">
       <header className="flex-shrink-0 flex justify-between items-center p-4 bg-[#181818] border-b border-[#3A3D42]/50">
         <div>
-          <h1 className="font-bold text-2xl text-white">Dashboard Admin</h1>
+          <h1 className="font-bold text-2xl text-white">Panel de Administrador</h1>
           <p className="text-sm text-gray-400">Paritos</p>
         </div>
         <div className="flex items-center space-x-4">
@@ -54,7 +54,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentView, setView, r
       </header>
 
       {currentView === 'Dashboard' && <DashboardHome />}
-      {currentView === 'Restaurants' && <ManageRestaurants onBack={() => setView('Dashboard')} restaurants={restaurants} onSave={onSaveRestaurant} onDelete={onDeleteRestaurant}/>}
+      {currentView === 'Restaurantes' && <ManageRestaurants onBack={() => setView('Dashboard')} restaurants={restaurants} onSave={onSaveRestaurant} onDelete={onDeleteRestaurant}/>}
     </div>
   );
 };

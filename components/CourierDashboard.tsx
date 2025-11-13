@@ -9,8 +9,8 @@ interface CourierDashboardProps {
 
 const CourierDashboard: React.FC<CourierDashboardProps> = ({ orders, onUpdateStatus }) => {
     
-  const activeOrder = orders.find(o => o.status === 'out_for_delivery');
-  const pendingOrders = orders.filter(o => o.status === 'pending_pickup');
+  const activeOrder = orders.find(o => o.status === 'en_camino');
+  const pendingOrders = orders.filter(o => o.status === 'en_preparacion');
 
   return (
     <div className="flex flex-col h-full text-white">
@@ -38,7 +38,7 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({ orders, onUpdateSta
                             Ver en Mapa
                         </button>
                         <button 
-                            onClick={() => onUpdateStatus(activeOrder.id, 'delivered')}
+                            onClick={() => onUpdateStatus(activeOrder.id, 'entregado')}
                             className="w-full bg-[#FFDF00] text-[#181818] font-bold py-2 rounded-lg transform hover:scale-105 transition-transform duration-200"
                         >
                             Marcar Entregado
@@ -63,7 +63,7 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({ orders, onUpdateSta
                                 <p className="text-sm text-gray-400">${order.total.toFixed(2)} • A 1.2km</p>
                             </div>
                             <button 
-                                onClick={() => onUpdateStatus(order.id, 'out_for_delivery')}
+                                onClick={() => onUpdateStatus(order.id, 'en_camino')}
                                 disabled={!!activeOrder}
                                 className="bg-[#FFDF00] text-[#181818] font-bold py-2 px-4 rounded-lg hover:scale-105 transition-transform duration-200 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:scale-100"
                             >

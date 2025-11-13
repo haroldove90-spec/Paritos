@@ -8,7 +8,7 @@ function getStorageValue<T>(key: string, defaultValue: T): T {
             try {
                 return JSON.parse(saved);
             } catch (error) {
-                console.error("Error parsing JSON from localStorage", error);
+                console.error("Error al analizar JSON de localStorage", error);
                 return defaultValue;
             }
         }
@@ -25,7 +25,7 @@ export function useLocalStorage<T>(key: string, defaultValue: T): [T, React.Disp
     try {
         localStorage.setItem(key, JSON.stringify(value));
     } catch (error) {
-        console.error("Error setting item to localStorage", error);
+        console.error("Error al guardar en localStorage", error);
     }
   }, [key, value]);
 

@@ -22,7 +22,7 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant, onClick, on
         <button 
             onClick={onToggleFavorite}
             className="absolute top-3 left-3 bg-black bg-opacity-40 rounded-full p-2 transition-all duration-200 hover:bg-opacity-60 hover:scale-110"
-            aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+            aria-label={isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}
         >
             <HeartIcon className={`w-5 h-5 transition-colors ${isFavorite ? 'text-red-500 fill-current' : 'text-white'}`} />
         </button>

@@ -5,7 +5,7 @@ import { HeartIcon } from './icons/HeartIcon';
 import { UserIcon } from './icons/UserIcon';
 import { CartIcon } from './icons/CartIcon';
 
-type ActiveView = 'Home' | 'Pedidos' | 'Favoritos' | 'Perfil' | 'Carrito' | 'Restaurant';
+type ActiveView = 'Inicio' | 'Pedidos' | 'Favoritos' | 'Perfil' | 'Carrito' | 'Restaurante';
 
 interface NavItemProps {
   icon: React.ElementType;
@@ -44,7 +44,7 @@ interface BottomNavProps {
 
 const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange, cartItemCount }) => {
   const navItems: { id: ActiveView; icon: React.ElementType; label: string; notificationCount?: number }[] = [
-    { id: 'Home', icon: HomeIcon, label: 'Inicio' },
+    { id: 'Inicio', icon: HomeIcon, label: 'Inicio' },
     { id: 'Pedidos', icon: OrdersIcon, label: 'Pedidos' },
     { id: 'Favoritos', icon: HeartIcon, label: 'Favoritos' },
     { id: 'Perfil', icon: UserIcon, label: 'Perfil' },
