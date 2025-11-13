@@ -13,7 +13,7 @@ interface SearchAndFiltersProps {
 const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({ activeCategory, onCategoryChange }) => {
 
   return (
-    <div className="px-4 pt-2 pb-2 flex-shrink-0 sticky top-[52px] bg-[#181818] z-10">
+    <div className="px-4 pb-2 flex-shrink-0 sticky top-[44px] bg-[#181818] z-10">
       <div className="relative mb-3">
         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
           <SearchIcon className="w-5 h-5 text-gray-400" />

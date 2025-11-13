@@ -12,7 +12,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onNotificationsClick, notificationCount, showBackButton, onBackClick }) => {
   return (
-    <header className="flex-shrink-0 flex items-center py-2 px-4 bg-[#181818] sticky top-0 z-10">
+    <header className="flex-shrink-0 flex items-center py-1 px-4 bg-[#181818] sticky top-0 z-10">
       <div className="w-10">
         {showBackButton ? (
              <button onClick={onBackClick} aria-label="Go back" className="p-2 -ml-2">
