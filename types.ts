@@ -1,6 +1,6 @@
 export type UserRole = 'Cliente' | 'Administracion' | 'Mensajero';
 
-export type RestaurantCategory = 'Vegetariano' | 'Pizza' | 'Sushi' | 'Mexicana' | 'Postres' | 'Café';
+export type RestaurantCategory = string;
 
 export interface MenuItem {
   id: number;

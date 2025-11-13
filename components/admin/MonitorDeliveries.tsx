@@ -96,8 +96,8 @@ const MonitorDeliveries: React.FC<MonitorDeliveriesProps> = ({ onBack, orders, c
                     })}
 
                     {/* Popup/Modal for selected courier */}
-                    {selectedCourier && (
-                        <div className="absolute top-4 left-4 bg-[#1e1e1e]/90 backdrop-blur-sm rounded-lg p-4 w-72 shadow-2xl border border-gray-700 animate-fade-in-fast">
+                    {selectedCourier && selectedOrder && (
+                        <div className="absolute top-4 left-4 bg-[#1e1e1e]/90 backdrop-blur-sm rounded-lg p-4 w-80 shadow-2xl border border-gray-700 animate-fade-in-fast">
                             <div className="flex justify-between items-start">
                                 <div className="flex items-center space-x-3">
                                     <img src={selectedCourier.imageUrl} alt={selectedCourier.name} className="w-12 h-12 rounded-full object-cover"/>
@@ -113,6 +113,11 @@ const MonitorDeliveries: React.FC<MonitorDeliveriesProps> = ({ onBack, orders, c
                             <div className="mt-3 border-t border-gray-700 pt-3 text-sm flex items-center space-x-2">
                                 <div className={`w-2.5 h-2.5 rounded-full ${statusMap[selectedCourier.status].color}`}></div>
                                 <p className="font-semibold text-gray-300">{statusMap[selectedCourier.status].text}</p>
+                            </div>
+                            <div className="mt-3 border-t border-gray-700 pt-3 text-sm space-y-1">
+                                <p className="font-bold text-[#FFDF00]">Entregando Pedido #{selectedOrder.id.toString().slice(-4)}</p>
+                                <p className="text-gray-300"><span className="font-semibold">Cliente:</span> {selectedOrder.customerName}</p>
+                                <p className="text-gray-300"><span className="font-semibold">Dirección:</span> Av. Siempre Viva 123</p>
                             </div>
                         </div>
                     )}

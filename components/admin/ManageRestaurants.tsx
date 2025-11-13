@@ -9,9 +9,10 @@ interface ManageRestaurantsProps {
     restaurants: Restaurant[];
     onSave: (restaurant: Restaurant) => void;
     onDelete: (id: number) => void;
+    allCategories: string[];
 }
 
-const ManageRestaurants: React.FC<ManageRestaurantsProps> = ({ onBack, restaurants, onSave, onDelete }) => {
+const ManageRestaurants: React.FC<ManageRestaurantsProps> = ({ onBack, restaurants, onSave, onDelete, allCategories }) => {
     const [isFormOpen, setFormOpen] = useState(false);
     const [editingRestaurant, setEditingRestaurant] = useState<Restaurant | null>(null);
 
@@ -70,6 +71,7 @@ const ManageRestaurants: React.FC<ManageRestaurantsProps> = ({ onBack, restauran
                     restaurant={editingRestaurant} 
                     onSave={handleSave} 
                     onClose={() => setFormOpen(false)} 
+                    allCategories={allCategories}
                 />
             )}
         </main>

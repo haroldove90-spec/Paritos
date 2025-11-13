@@ -29,6 +29,7 @@ interface AdminDashboardProps {
     onDeleteCourier: (id: number) => void;
     notificationCount: number;
     onNotificationsClick: () => void;
+    allCategories: string[];
 }
 
 const AdminCard: React.FC<{
@@ -67,7 +68,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     restaurants, onSaveRestaurant, onDeleteRestaurant, 
     orders, onUpdateOrderStatus,
     couriers, onSaveCourier, onDeleteCourier,
-    notificationCount, onNotificationsClick
+    notificationCount, onNotificationsClick,
+    allCategories
 }) => {
 
   const DashboardHome: React.FC = () => {
@@ -209,7 +211,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
       </header>
 
       {currentView === 'Dashboard' && <DashboardHome />}
-      {currentView === 'Restaurantes' && <ManageRestaurants onBack={() => setView('Dashboard')} restaurants={restaurants} onSave={onSaveRestaurant} onDelete={onDeleteRestaurant}/>}
+      {currentView === 'Restaurantes' && <ManageRestaurants onBack={() => setView('Dashboard')} restaurants={restaurants} onSave={onSaveRestaurant} onDelete={onDeleteRestaurant} allCategories={allCategories}/>}
       {currentView === 'Pedidos' && <ManageOrders onBack={() => setView('Dashboard')} orders={orders} onUpdateOrderStatus={onUpdateOrderStatus} />}
       {currentView === 'Mensajeros' && <ManageCouriers onBack={() => setView('Dashboard')} couriers={couriers} onSave={onSaveCourier} onDelete={onDeleteCourier} />}
       {currentView === 'Analíticas' && <ManageAnalytics onBack={() => setView('Dashboard')} orders={orders} restaurants={restaurants} couriers={couriers} />}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Header from './components/Header';
 import BottomNav from './components/BottomNav';
 import RoleSwitcher from './components/RoleSwitcher';
@@ -12,7 +12,7 @@ import CartPage from './pages/CartPage';
 import RestaurantPage from './pages/RestaurantPage';
 import NotificationsPage from './pages/NotificationsPage';
 import InstallPWA from './components/InstallPWA';
-import type { UserRole, Restaurant, Order, Notification, CartItem, MenuItem, OrderStatus, Courier } from './types';
+import type { UserRole, Restaurant, Order, Notification, CartItem, MenuItem, OrderStatus, Courier, RestaurantCategory } from './types';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { mockRestaurants as initialRestaurants, mockCouriers as initialCouriers } from './data/mockData';
 
@@ -37,6 +37,11 @@ const App: React.FC = () => {
   const [isNotificationsOpen, setNotificationsOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstallDismissed, setIsInstallDismissed] = useLocalStorage('installDismissed', false);
+
+  const allCategories = useMemo(() => {
+    const categoriesSet = new Set(restaurants.map(r => r.category));
+    return Array.from(categoriesSet).sort();
+  }, [restaurants]);
 
   useEffect(() => {
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -154,14 +159,28 @@ const App: React.FC = () => {
   };
 
   const saveRestaurant = (restaurant: Restaurant) => {
+    let isNew = false;
     setRestaurants(prev => {
         const exists = prev.some(r => r.id === restaurant.id);
         if (exists) {
             return prev.map(r => r.id === restaurant.id ? restaurant : r);
         }
+        isNew = true;
         return [...prev, restaurant];
     });
-    setAdminView('Dashboard');
+
+    const message = isNew 
+      ? `Se ha añadido el restaurante "${restaurant.name}".`
+      : `Se ha actualizado el restaurante "${restaurant.name}".`;
+
+    const newNotification: Notification = {
+        id: Date.now(),
+        message: `Admin: ${message}`,
+        read: false,
+        date: new Date().toISOString()
+    };
+    
+    setNotifications(prev => [newNotification, ...prev]);
   };
 
   const deleteRestaurant = (id: number) => {
@@ -215,6 +234,7 @@ const App: React.FC = () => {
                     onSelectRestaurant={handleSelectRestaurant}
                     onToggleFavorite={handleToggleFavorite}
                     favorites={favorites}
+                    allCategories={allCategories}
                 />;
     }
   };
@@ -237,6 +257,7 @@ const App: React.FC = () => {
                     onDeleteCourier={deleteCourier}
                     notificationCount={unreadNotifications}
                     onNotificationsClick={() => setNotificationsOpen(true)}
+                    allCategories={allCategories}
                 />;
       case 'Mensajero':
         return <CourierDashboard orders={orders} onUpdateStatus={updateOrderStatus} />;

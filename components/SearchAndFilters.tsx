@@ -3,16 +3,15 @@ import { SearchIcon } from './icons/SearchIcon';
 import { FilterIcon } from './icons/FilterIcon';
 import type { RestaurantCategory } from '../types';
 
-const categories: RestaurantCategory[] = ['Vegetariano', 'Pizza', 'Sushi', 'Mexicana', 'Postres', 'Café'];
-
 interface SearchAndFiltersProps {
     activeCategory: RestaurantCategory | 'All';
     onCategoryChange: (category: RestaurantCategory | 'All') => void;
     searchTerm: string;
     onSearchChange: (term: string) => void;
+    allCategories: RestaurantCategory[];
 }
 
-const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({ activeCategory, onCategoryChange, searchTerm, onSearchChange }) => {
+const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({ activeCategory, onCategoryChange, searchTerm, onSearchChange, allCategories }) => {
 
   return (
     <div className="px-4 pb-2 flex-shrink-0 sticky top-[44px] bg-[#181818] z-10">
@@ -41,7 +40,7 @@ const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({ activeCategory, onC
             >
                 Todo
             </button>
-            {categories.map((category) => (
+            {allCategories.map((category) => (
             <button
                 key={category}
                 onClick={() => onCategoryChange(category)}

@@ -8,9 +8,10 @@ interface HomePageProps {
     onSelectRestaurant: (id: number) => void;
     onToggleFavorite: (restaurantId: number) => void;
     favorites: number[];
+    allCategories: RestaurantCategory[];
 }
 
-const HomePage: React.FC<HomePageProps> = ({ restaurants, onSelectRestaurant, onToggleFavorite, favorites }) => {
+const HomePage: React.FC<HomePageProps> = ({ restaurants, onSelectRestaurant, onToggleFavorite, favorites, allCategories }) => {
     const [activeCategory, setActiveCategory] = useState<RestaurantCategory | 'All'>('All');
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -37,6 +38,7 @@ const HomePage: React.FC<HomePageProps> = ({ restaurants, onSelectRestaurant, on
                 onCategoryChange={setActiveCategory}
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
+                allCategories={allCategories}
             />
             <RestaurantList 
                 restaurants={filteredRestaurants} 
