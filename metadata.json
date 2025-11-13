@@ -1,0 +1,5 @@
+{
+  "name": "Paritos",
+  "description": "A food delivery application interface similar to Uber Eats, designed for the business 'Paritos'.",
+  "requestFramePermissions": []
+}
