@@ -3,8 +3,8 @@ import type { Restaurant, Courier } from '../types';
 export const mockRestaurants: Restaurant[] = [
   {
     id: 1,
-    name: 'The Burger Joint',
-    imageUrl: 'https://picsum.photos/seed/burger/400/200',
+    name: 'Hamburguesas',
+    imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSenduZfLkicNFMsPdQsLLSCuONkrwIFm_4-Q&s',
     rating: 4.7,
     reviews: '500+',
     deliveryTime: '25-35 min',
@@ -20,8 +20,8 @@ export const mockRestaurants: Restaurant[] = [
   },
   {
     id: 2,
-    name: 'The Taco Spot',
-    imageUrl: 'https://picsum.photos/seed/taco/400/200',
+    name: 'Tacos',
+    imageUrl: 'https://storage.googleapis.com/gx-global-cms/mkt/2a3e8217-6ecf-43cd-b5ee-6a3e8f68da12.jpg',
     rating: 4.8,
     reviews: '1k+',
     deliveryTime: '20-30 min',
@@ -37,8 +37,8 @@ export const mockRestaurants: Restaurant[] = [
   },
   {
     id: 4,
-    name: 'Sushi Heaven',
-    imageUrl: 'https://picsum.photos/seed/sushi/400/200',
+    name: 'Sushi',
+    imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRJGgDAitY1DlpqgrMCEp9z5kGoqmcKnF08qw&s',
     rating: 4.9,
     reviews: '800+',
     deliveryTime: '35-45 min',
@@ -54,8 +54,8 @@ export const mockRestaurants: Restaurant[] = [
   },
   {
     id: 5,
-    name: 'Green Delight',
-    imageUrl: 'https://picsum.photos/seed/salad/400/200',
+    name: 'Ensaladas',
+    imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTSK-w1eCJY5gAR0La33zNs4AsGhU0piaT8w&s',
     rating: 4.6,
     reviews: '300+',
     deliveryTime: '15-25 min',
@@ -70,8 +70,8 @@ export const mockRestaurants: Restaurant[] = [
   },
   {
     id: 6,
-    name: 'Pizza Palace',
-    imageUrl: 'https://picsum.photos/seed/pizza/400/200',
+    name: 'Pizzas',
+    imageUrl: 'https://www.hola.com/horizon/landscape/e9e1e82cb873-pepperoni-pizza-abob-t.jpg',
     rating: 4.4,
     reviews: '750+',
     deliveryTime: '25-35 min',
@@ -86,8 +86,8 @@ export const mockRestaurants: Restaurant[] = [
   },
   {
     id: 7,
-    name: 'Sweet Dreams',
-    imageUrl: 'https://picsum.photos/seed/dessert/400/200',
+    name: 'Postres',
+    imageUrl: 'https://www.cocinadelirante.com/800x600/filters:format(webp):quality(75)/sites/default/files/images/2023/08/postres-faciles-y-rapidos.jpg',
     rating: 4.8,
     reviews: '400+',
     deliveryTime: '10-20 min',
@@ -102,8 +102,8 @@ export const mockRestaurants: Restaurant[] = [
   },
   {
     id: 8,
-    name: 'The Daily Grind',
-    imageUrl: 'https://picsum.photos/seed/coffee/400/200',
+    name: 'Baguettes',
+    imageUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQkMqa3dWsVUpwGCFGwFsbcLHUbyhhnaifz_A&s',
     rating: 4.9,
     reviews: '600+',
     deliveryTime: '5-15 min',
