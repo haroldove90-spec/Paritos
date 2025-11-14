@@ -193,10 +193,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <p className="text-sm text-gray-400">Paritos</p>
         </div>
         <div className="flex items-center space-x-2">
-            <button className="p-2 rounded-full hover:bg-[#2a2a2a] transition-colors" aria-label="Buscar">
+            <button className="p-2 rounded-full hover:bg-[#2a2a2a] transition-colors transition-transform duration-200 hover:scale-110" aria-label="Buscar">
                 <SearchIcon className="w-6 h-6 text-gray-300" />
             </button>
-            <button onClick={onNotificationsClick} className="relative p-2 rounded-full hover:bg-[#2a2a2a] transition-colors" aria-label="Ver notificaciones">
+            <button onClick={onNotificationsClick} className="relative p-2 rounded-full hover:bg-[#2a2a2a] transition-colors transition-transform duration-200 hover:scale-110" aria-label="Ver notificaciones">
                 <BellIcon className="w-6 h-6 text-gray-300" />
                 {notificationCount > 0 && (
                     <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center border-2 border-[#181818]">
@@ -204,7 +204,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     </span>
                 )}
             </button>
-            <button className="p-2 rounded-full hover:bg-[#2a2a2a] transition-colors" aria-label="Abrir menú">
+            <button className="p-2 rounded-full hover:bg-[#2a2a2a] transition-colors transition-transform duration-200 hover:scale-110" aria-label="Abrir menú">
                 <MenuIcon className="w-6 h-6 text-gray-300" />
             </button>
         </div>

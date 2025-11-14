@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import PromoBanner from '../components/PromoBanner';
 import SearchAndFilters from '../components/SearchAndFilters';
 import RestaurantList from '../components/RestaurantList';
 import type { Restaurant, RestaurantCategory } from '../types';
@@ -33,6 +34,7 @@ const HomePage: React.FC<HomePageProps> = ({ restaurants, onSelectRestaurant, on
 
     return (
         <>
+            <PromoBanner />
             <SearchAndFilters 
                 activeCategory={activeCategory} 
                 onCategoryChange={setActiveCategory}

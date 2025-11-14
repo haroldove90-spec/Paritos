@@ -28,7 +28,7 @@ const Header: React.FC<HeaderProps> = ({ onNotificationsClick, notificationCount
         </div>
       </div>
       <div className="w-10 flex justify-end">
-        <button onClick={onNotificationsClick} aria-label="Ver notificaciones" className="relative p-2 -mr-2">
+        <button onClick={onNotificationsClick} aria-label="Ver notificaciones" className="relative p-2 -mr-2 transition-transform duration-200 hover:scale-110">
             <BellIcon className="w-6 h-6 text-white" />
             {notificationCount > 0 && (
                 <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center border-2 border-[#181818]">

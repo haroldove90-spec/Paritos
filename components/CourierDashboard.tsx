@@ -25,7 +25,7 @@ const CourierDashboard: React.FC<CourierDashboardProps> = ({ orders, onUpdateSta
             <h1 className="font-bold text-xl text-white">Dashboard Mensajero</h1>
             <p className="text-sm text-gray-400">Mis Pedidos y Envíos</p>
         </div>
-        <button><MenuIcon className="w-6 h-6 text-white" /></button>
+        <button className="transition-transform duration-200 hover:scale-110"><MenuIcon className="w-6 h-6 text-white" /></button>
       </header>
 
       <main className="flex-grow overflow-y-auto p-4 space-y-6">
