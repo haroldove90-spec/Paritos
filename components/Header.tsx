@@ -11,7 +11,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onNotificationsClick, notificationCount, showBackButton, onBackClick }) => {
   return (
-    <header className="flex-shrink-0 flex items-center py-1 px-4 bg-[#181818] sticky top-0 z-10">
+    <header className="flex-shrink-0 flex items-center py-2 px-4 bg-[#181818] sticky top-0 z-10">
       <div className="w-10">
         {showBackButton ? (
              <button onClick={onBackClick} aria-label="Volver" className="p-2 -ml-2">
@@ -23,8 +23,8 @@ const Header: React.FC<HeaderProps> = ({ onNotificationsClick, notificationCount
       </div>
       <div className="flex-1 flex justify-center">
         <div className="flex items-center space-x-2">
-            <img src="https://appdesignmex.com/parito.png" alt="Paritos Logo" className="w-10 h-10" />
-            <h1 className="font-bold text-2xl text-[#FFDF00]">Paritos</h1>
+            <img src="https://appdesignmex.com/parito.png" alt="Paritos Logo" className="w-12 h-12" />
+            <h1 className="font-bold text-3xl text-[#FFDF00]">Paritos</h1>
         </div>
       </div>
       <div className="w-10 flex justify-end">
