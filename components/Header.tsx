@@ -1,5 +1,4 @@
 import React from 'react';
-import { MenuIcon } from './icons/MenuIcon';
 import { BellIcon } from './icons/BellIcon';
 import { ChevronLeftIcon } from './icons/ChevronLeftIcon';
 
@@ -19,15 +18,13 @@ const Header: React.FC<HeaderProps> = ({ onNotificationsClick, notificationCount
                 <ChevronLeftIcon className="w-6 h-6 text-white" />
             </button>
         ) : (
-            <button aria-label="Abrir menú" className="p-2 -ml-2">
-                <MenuIcon className="w-6 h-6 text-white" />
-            </button>
+           null // Menu icon removed as requested
         )}
       </div>
       <div className="flex-1 flex justify-center">
         <div className="flex items-center space-x-2">
-            <img src="https://appdesignmex.com/parito.png" alt="Paritos Logo" className="w-9 h-9" />
-            <h1 className="font-bold text-xl text-[#FFDF00]">Paritos</h1>
+            <img src="https://appdesignmex.com/parito.png" alt="Paritos Logo" className="w-10 h-10" />
+            <h1 className="font-bold text-2xl text-[#FFDF00]">Paritos</h1>
         </div>
       </div>
       <div className="w-10 flex justify-end">
