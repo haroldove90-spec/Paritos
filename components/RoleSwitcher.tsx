@@ -50,7 +50,7 @@ const RoleSwitcher: React.FC<RoleSwitcherProps> = ({ currentRole, onRoleChange }
                     aria-label="Cambiar rol de usuario"
                     className="w-16 h-16 bg-[#FFDF00] rounded-full flex items-center justify-center text-[#181818] shadow-lg transform hover:scale-110 transition-transform duration-200 focus:outline-none focus:ring-4 focus:ring-[#FFDF00]/50"
                 >
-                    {isOpen ? <XIcon className="w-8 h-8" /> : <AdjustmentsVerticalIcon className="w-8 h-8" />}
+                    {isOpen ? <XIcon className="w-6 h-6" /> : <AdjustmentsVerticalIcon className="w-6 h-6" />}
                 </button>
             </div>
         </div>
