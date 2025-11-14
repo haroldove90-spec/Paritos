@@ -12,17 +12,16 @@ interface RestaurantPageProps {
 const RestaurantPage: React.FC<RestaurantPageProps> = ({ restaurant, onAddToCart, cartItems }) => {
   return (
     <div>
-        <div className="relative h-48">
+        <div className="relative h-80 w-full">
             <img src={restaurant.imageUrl} alt={restaurant.name} className="w-full h-full object-cover"/>
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-            <div className="absolute bottom-4 left-4 text-white">
-                <h1 className="text-3xl font-extrabold">{restaurant.name}</h1>
-                 <div className="flex items-center text-sm mt-1">
-                    <StarIcon className="w-5 h-5 text-[#FFDF00] mr-1" />
-                    <span className="font-bold">{restaurant.rating}</span>
-                    <span className="text-gray-300 ml-1">({restaurant.reviews})</span>
-                    <span className="mx-2 text-gray-400">•</span>
-                    <span className="text-gray-300">{restaurant.cuisine}</span>
+            <div className="absolute inset-0 bg-black/60 flex flex-col justify-center items-center text-center p-4">
+                <h1 className="text-5xl font-extrabold text-white tracking-tight">{restaurant.name}</h1>
+                 <div className="flex items-center text-sm mt-4 bg-black/40 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20">
+                    <StarIcon className="w-5 h-5 text-[#FFDF00] mr-1.5" />
+                    <span className="font-bold text-white">{restaurant.rating}</span>
+                    <span className="text-gray-300 ml-1.5">({restaurant.reviews})</span>
+                    <span className="mx-3 text-gray-400 font-light">|</span>
+                    <span className="text-gray-200 font-semibold">{restaurant.cuisine}</span>
                 </div>
             </div>
         </div>

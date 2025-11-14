@@ -2,6 +2,8 @@ import React from 'react';
 import type { Restaurant } from '../types';
 import { StarIcon } from './icons/StarIcon';
 import { HeartIcon } from './icons/HeartIcon';
+import { ClockIcon } from './icons/ClockIcon';
+import { ChatBubbleOvalLeftEllipsisIcon } from './icons/ChatBubbleOvalLeftEllipsisIcon';
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
@@ -31,14 +33,20 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({ restaurant, onClick, on
             <p className="text-sm text-gray-300">{restaurant.cuisine}</p>
         </div>
       </div>
-      <div className="p-4 flex-grow flex items-center justify-between text-sm">
-        <div className="flex items-center text-gray-300">
-            <StarIcon className="w-5 h-5 text-[#FFDF00] mr-1.5" />
-            <span className="font-bold text-white">{restaurant.rating}</span>
-            <span className="text-gray-400 ml-1">({restaurant.reviews})</span>
+      <div className="p-4 flex-grow flex flex-col space-y-2 text-sm">
+        <div className="flex items-center justify-between">
+            <div className="flex items-center text-gray-300">
+                <StarIcon className="w-5 h-5 text-[#FFDF00] mr-1.5" />
+                <span className="font-bold text-white">{restaurant.rating}</span>
+            </div>
+            <div className="flex items-center text-gray-300">
+                 <ClockIcon className="w-4 h-4 text-gray-400 mr-1" />
+                 <span className="font-semibold text-gray-200">{restaurant.deliveryTime}</span>
+            </div>
         </div>
-        <div className="text-right">
-             <span className="font-semibold text-gray-200">{restaurant.deliveryTime}</span>
+        <div className="flex items-center text-gray-400 pt-2 border-t border-white/5">
+            <ChatBubbleOvalLeftEllipsisIcon className="w-4 h-4 text-gray-400 mr-1.5" />
+            <span className="font-medium text-gray-300">{restaurant.reviews} Reseñas</span>
         </div>
       </div>
     </div>
