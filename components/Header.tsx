@@ -23,7 +23,7 @@ const Header: React.FC<HeaderProps> = ({ onNotificationsClick, notificationCount
       </div>
       <div className="flex-1 flex justify-center">
         <div className="flex items-center space-x-2">
-            <img src="https://appdesignmex.com/parito.png" alt="Paritos Logo" className="w-12 h-12" />
+            <img src="https://appdesignmex.com/parito.png" alt="Paritos Logo" className="w-10 h-10" />
             <h1 className="font-bold text-3xl text-[#FFDF00]">Paritos</h1>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { CartItem } from '../types';
 import { TrashIcon } from '../components/icons/TrashIcon';
 
@@ -10,6 +10,8 @@ interface CartPageProps {
 }
 
 const CartPage: React.FC<CartPageProps> = ({ cartItems, onPlaceOrder, onClearCart, setCart }) => {
+  const [isConfirmingClear, setIsConfirmingClear] = useState(false);
+
   const totalPrice = cartItems.reduce((total, item) => {
     return total + item.price * item.quantity;
   }, 0);
@@ -26,6 +28,11 @@ const CartPage: React.FC<CartPageProps> = ({ cartItems, onPlaceOrder, onClearCar
         }
         return item;
     }).filter((item): item is CartItem => item !== null));
+  }
+  
+  const handleConfirmClear = () => {
+    onClearCart();
+    setIsConfirmingClear(false);
   }
 
   return (
@@ -79,13 +86,45 @@ const CartPage: React.FC<CartPageProps> = ({ cartItems, onPlaceOrder, onClearCar
               Realizar Pedido
             </button>
             <button
-              onClick={onClearCart}
+              onClick={() => setIsConfirmingClear(true)}
               className="w-full bg-[#3A3D42] text-white font-bold py-2 rounded-lg hover:bg-[#4a4d52] transition-colors"
             >
               Vaciar Carrito
             </button>
           </div>
         </>
+      )}
+
+      {isConfirmingClear && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-4 animate-fade-in-fast">
+            <div className="bg-[#1e1e1e] w-full max-w-sm rounded-lg shadow-2xl p-6 text-center border border-[#3A3D42]">
+                <h2 className="font-bold text-xl text-[#FFDF00]">¿Vaciar Carrito?</h2>
+                <p className="text-gray-300 mt-2 mb-6">
+                    ¿Estás seguro de que quieres eliminar todos los artículos de tu carrito?
+                </p>
+                <div className="flex justify-center space-x-4">
+                    <button
+                        onClick={() => setIsConfirmingClear(false)}
+                        className="bg-[#3A3D42] text-white font-bold py-2 px-6 rounded-lg hover:bg-[#4a4d52] transition-colors"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        onClick={handleConfirmClear}
+                        className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+                    >
+                        Vaciar
+                    </button>
+                </div>
+            </div>
+            <style>{`
+                @keyframes fade-in-fast {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                .animate-fade-in-fast { animation: fade-in-fast 0.2s ease-out forwards; }
+            `}</style>
+        </div>
       )}
     </div>
   );

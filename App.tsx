@@ -12,7 +12,7 @@ import CartPage from './pages/CartPage';
 import RestaurantPage from './pages/RestaurantPage';
 import NotificationsPage from './pages/NotificationsPage';
 import InstallPWA from './components/InstallPWA';
-import type { UserRole, Restaurant, Order, Notification, CartItem, MenuItem, OrderStatus, Courier, RestaurantCategory } from './types';
+import type { UserRole, Restaurant, Order, Notification, CartItem, MenuItem, OrderStatus, Courier, RestaurantCategory, CourierStatus } from './types';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { mockRestaurants as initialRestaurants, mockCouriers as initialCouriers } from './data/mockData';
 
@@ -200,6 +200,10 @@ const App: React.FC = () => {
   const deleteCourier = (id: number) => {
     setCouriers(prev => prev.filter(c => c.id !== id));
   }
+  
+  const updateCourierStatus = (courierId: number, status: CourierStatus) => {
+      setCouriers(prev => prev.map(c => c.id === courierId ? { ...c, status } : c));
+  }
 
   const renderClientContent = () => {
     const selectedRestaurant = restaurants.find(r => r.id === selectedRestaurantId);
@@ -260,7 +264,12 @@ const App: React.FC = () => {
                     allCategories={allCategories}
                 />;
       case 'Mensajero':
-        return <CourierDashboard orders={orders} onUpdateStatus={updateOrderStatus} />;
+        return <CourierDashboard 
+                    orders={orders} 
+                    onUpdateStatus={updateOrderStatus}
+                    couriers={couriers}
+                    onUpdateCourierStatus={updateCourierStatus} 
+                />;
       case 'Cliente':
       default:
         return (
