@@ -71,11 +71,7 @@ const App: React.FC = () => {
     }
     const userId = session.user.id;
 
-    // 1. Try to fetch the user's profile
-    const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
-
-    // 2. Profile exists: process and set it
-    if (data && !error) {
+    const processProfileData = (data: any) => {
         const dbRole = (data as any).user_role;
         const roleStr = (dbRole ? String(dbRole).trim() : 'Cliente').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
         
@@ -97,47 +93,54 @@ const App: React.FC = () => {
         setDbProfile(profileData as DBProfile);
         setViewRole(finalRole);
         setFavorites((data as any).favorite_restaurants || []);
-        setIsLoading(false);
-        return;
-    }
-
-    // 3. Profile doesn't exist (new user): create it
-    if (error && error.code === 'PGRST116') {
-        console.log('No profile found for new user, creating one...');
-        const newProfileData = {
-            id: userId,
-            full_name: session.user.user_metadata.full_name || session.user.email?.split('@')[0] || 'Nuevo Usuario',
-            user_role: 'Cliente',
-            address: null,
-            favorite_restaurants: [],
-        };
-
-        const { data: createdProfile, error: insertError } = await supabase
+    };
+    
+    try {
+        // 1. Try to fetch the user's profile without .single()
+        const { data: profiles, error: selectError } = await supabase
             .from('profiles')
-            .insert(newProfileData)
-            .select()
-            .single();
-        
-        if (insertError) {
-            console.error("Critical error: Failed to create profile for new user.", insertError);
-            await supabase.auth.signOut();
-            return;
-        }
+            .select('*')
+            .eq('id', userId);
 
-        if (createdProfile) {
-            console.log("Profile created successfully.");
-            const profileData = { ...createdProfile, role: 'Cliente' as UserRole };
-            delete (profileData as any).user_role;
-            setDbProfile(profileData as DBProfile);
-            setViewRole('Cliente');
-            setFavorites([]);
+        if (selectError) {
+            // Rethrow to be caught by the outer catch block
+            throw selectError;
         }
-    } else if (error) {
-      // 4. Any other error
-      console.error("Error fetching profile, logging out.", error);
-      await supabase.auth.signOut();
+        
+        // 2. If profile exists (result array is not empty), process it.
+        if (profiles && profiles.length > 0) {
+            processProfileData(profiles[0]);
+        } else {
+            // 3. Profile doesn't exist OR is hidden by RLS. Attempt to create one.
+            console.log('No profile found for user, creating one...');
+            const newProfileData = {
+                id: userId,
+                full_name: session.user.user_metadata.full_name || session.user.email?.split('@')[0] || 'Nuevo Usuario',
+                user_role: 'Cliente',
+                address: null,
+                favorite_restaurants: [],
+            };
+    
+            const { data: createdProfile, error: insertError } = await supabase
+                .from('profiles')
+                .insert(newProfileData)
+                .select()
+                .single();
+            
+            if (insertError) {
+                // This is a critical failure, likely RLS on INSERT
+                throw insertError;
+            } else if (createdProfile) {
+                console.log("Profile created successfully.");
+                processProfileData(createdProfile);
+            }
+        }
+    } catch (error: any) {
+        console.error("Critical error in fetchProfile, logging out. This is likely an RLS policy issue.", error);
+        await supabase.auth.signOut();
+    } finally {
+        setIsLoading(false);
     }
-    setIsLoading(false);
   }, []);
 
 

@@ -52,12 +52,18 @@ const AuthPage: React.FC = () => {
     });
     if (error) {
         console.error("Signup Error:", error);
-        if (error.message.includes('User already registered')) {
+        const errorMessage = error.message.toLowerCase();
+
+        if (errorMessage.includes('user already registered')) {
             setError('Ya existe un usuario con este correo electrónico.');
-        } else if (error.message.includes('Database error saving new user')) {
+        } else if (errorMessage.includes('email') && errorMessage.includes('invalid')) {
+            setError('El correo electrónico no es válido o el dominio no está permitido. Por favor, revísalo o intenta con otro (ej. Gmail, Outlook).');
+        } else if (errorMessage.includes('password should be at least')) {
+            setError('La contraseña es demasiado corta. Debe tener al menos 6 caracteres.');
+        } else if (errorMessage.includes('database error saving new user')) {
             setError('Ocurrió un error al crear tu perfil. Por favor, contacta a soporte.');
         } else {
-            setError('Ocurrió un error inesperado durante el registro.');
+            setError('Ocurrió un error inesperado. Revisa tus datos e intenta de nuevo.');
         }
     } else {
         setSuccessMessage('¡Registro exitoso! Revisa tu email para verificar tu cuenta y poder iniciar sesión.');
