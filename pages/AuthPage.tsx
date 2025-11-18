@@ -51,10 +51,13 @@ const AuthPage: React.FC = () => {
       },
     });
     if (error) {
+        console.error("Signup Error:", error);
         if (error.message.includes('User already registered')) {
             setError('Ya existe un usuario con este correo electrónico.');
+        } else if (error.message.includes('Database error saving new user')) {
+            setError('Ocurrió un error al crear tu perfil. Por favor, contacta a soporte.');
         } else {
-            setError(error.message);
+            setError('Ocurrió un error inesperado durante el registro.');
         }
     } else {
         setSuccessMessage('¡Registro exitoso! Revisa tu email para verificar tu cuenta y poder iniciar sesión.');

@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import Header from './components/Header';
@@ -68,69 +63,98 @@ const App: React.FC = () => {
     return Array.from(categoriesSet).sort();
   }, [restaurants]);
 
-  const fetchProfile = useCallback(async (userId: string) => {
-    const { data: sessionData } = await supabase.auth.getSession();
-    const currentSession = sessionData.session;
+  const fetchProfile = useCallback(async (session: Session | null) => {
+    if (!session) {
+      setDbProfile(null);
+      setIsLoading(false);
+      return;
+    }
+    const userId = session.user.id;
 
+    // 1. Try to fetch the user's profile
     const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
 
-    if (currentSession?.user.id === userId) {
-        if (error || !data) {
-            console.error("No se pudo obtener el perfil o no se encontró. Cerrando sesión.", error);
-            await supabase.auth.signOut();
-            setDbProfile(null);
-        } else {
-            const dbRole = (data as any).user_role;
-            const roleStr = (dbRole ? String(dbRole).trim() : 'Cliente').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-            
-            let finalRole: UserRole = 'Cliente';
-            if (roleStr === 'administracion' || roleStr === 'administrador') {
-                finalRole = 'Administracion';
-            } else if (roleStr === 'mensajero') {
-                finalRole = 'Mensajero';
-            }
-
-            // Hardcode admin role for specific users
-            const adminEmails = ['haroldo90@hotmail.com'];
-            if (currentSession.user.email && adminEmails.includes(currentSession.user.email)) {
-                finalRole = 'Administracion';
-            }
-
-            const profileData = { ...data, role: finalRole };
-            delete (profileData as any).user_role;
-
-            setDbProfile(profileData as DBProfile);
-            setViewRole(finalRole);
-            setFavorites((data as any).favorite_restaurants || []);
+    // 2. Profile exists: process and set it
+    if (data && !error) {
+        const dbRole = (data as any).user_role;
+        const roleStr = (dbRole ? String(dbRole).trim() : 'Cliente').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        
+        let finalRole: UserRole = 'Cliente';
+        if (roleStr === 'administracion' || roleStr === 'administrador') {
+            finalRole = 'Administracion';
+        } else if (roleStr === 'mensajero') {
+            finalRole = 'Mensajero';
         }
+
+        const adminEmails = ['haroldo90@hotmail.com'];
+        if (session.user.email && adminEmails.includes(session.user.email)) {
+            finalRole = 'Administracion';
+        }
+
+        const profileData = { ...data, role: finalRole };
+        delete (profileData as any).user_role;
+
+        setDbProfile(profileData as DBProfile);
+        setViewRole(finalRole);
+        setFavorites((data as any).favorite_restaurants || []);
         setIsLoading(false);
-    } else {
-        // This case handles when we're fetching another user's profile (e.g., a new courier)
-        // We don't want to update the main app state. The original code was buggy here.
-        if (error || !data) {
-            console.error(`Error fetching profile for other user ${userId}:`, error);
-        }
+        return;
     }
+
+    // 3. Profile doesn't exist (new user): create it
+    if (error && error.code === 'PGRST116') {
+        console.log('No profile found for new user, creating one...');
+        const newProfileData = {
+            id: userId,
+            full_name: session.user.user_metadata.full_name || session.user.email?.split('@')[0] || 'Nuevo Usuario',
+            user_role: 'Cliente',
+            address: null,
+            favorite_restaurants: [],
+        };
+
+        const { data: createdProfile, error: insertError } = await supabase
+            .from('profiles')
+            .insert(newProfileData)
+            .select()
+            .single();
+        
+        if (insertError) {
+            console.error("Critical error: Failed to create profile for new user.", insertError);
+            await supabase.auth.signOut();
+            return;
+        }
+
+        if (createdProfile) {
+            console.log("Profile created successfully.");
+            const profileData = { ...createdProfile, role: 'Cliente' as UserRole };
+            delete (profileData as any).user_role;
+            setDbProfile(profileData as DBProfile);
+            setViewRole('Cliente');
+            setFavorites([]);
+        }
+    } else if (error) {
+      // 4. Any other error
+      console.error("Error fetching profile, logging out.", error);
+      await supabase.auth.signOut();
+    }
+    setIsLoading(false);
   }, []);
 
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      if (session) {
-        fetchProfile(session.user.id);
-      } else {
-        setIsLoading(false);
-      }
+      fetchProfile(session);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (session) {
-        fetchProfile(session.user.id);
-      } else {
+      fetchProfile(session);
+      if (!session) {
+        // Clear state on logout
         setDbProfile(null);
-        setIsLoading(false);
+        setViewRole('Cliente');
+        setActiveView('Inicio');
       }
     });
     return () => subscription.unsubscribe();
@@ -476,7 +500,7 @@ const App: React.FC = () => {
       if (appError) { console.error("Error updating application status:", appError); return; }
       
       // Refresh all data
-      await Promise.all([fetchCouriers(), fetchCourierApplications(), fetchProfile(app.user_id)]);
+      await Promise.all([fetchCouriers(), fetchCourierApplications(), fetchProfile(session)]);
   };
 
   const handleRejectApplication = async (app: CourierApplication) => {
@@ -547,7 +571,7 @@ const App: React.FC = () => {
   const renderContent = () => {
     const unreadNotifications = notifications.filter(n => !n.read).length;
 
-    if (isDataLoading) {
+    if (isDataLoading && dbProfile) { // Show loading only after profile is loaded and data is fetching
       return (
         <div className="flex-grow flex items-center justify-center">
           <p className="text-xl text-gray-400">Cargando Paritos...</p>
@@ -622,7 +646,7 @@ const App: React.FC = () => {
   };
 
   if (isLoading) {
-      return null; // Or a splash screen
+      return null; // Render nothing, splash screen is visible from index.html
   }
 
   if (!session || !dbProfile) {
