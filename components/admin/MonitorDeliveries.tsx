@@ -5,7 +5,6 @@ import { XIcon } from '../icons/XIcon';
 import { TruckIcon } from '../icons/TruckIcon';
 
 interface MonitorDeliveriesProps {
-    onBack: () => void;
     orders: Order[];
     couriers: Courier[];
 }
@@ -26,7 +25,7 @@ const statusMap = {
 };
 
 
-const MonitorDeliveries: React.FC<MonitorDeliveriesProps> = ({ onBack, orders, couriers }) => {
+const MonitorDeliveries: React.FC<MonitorDeliveriesProps> = ({ orders, couriers }) => {
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const activeDeliveries = orders.filter(o => o.status === 'en_camino');
 
@@ -50,10 +49,10 @@ const MonitorDeliveries: React.FC<MonitorDeliveriesProps> = ({ onBack, orders, c
 
 
     return (
-        <main className="flex-grow overflow-hidden p-6 flex flex-col">
+        <main className="flex-grow overflow-hidden p-6 flex flex-col h-full">
             <div className="flex-shrink-0 mb-6">
-                <button onClick={onBack} className="text-sm text-[#FFDF00] hover:underline mb-1">&larr; Volver al Panel</button>
-                <h2 className="text-2xl font-bold text-white">Monitoreo de Entregas en Tiempo Real</h2>
+                 <h1 className="text-3xl font-bold text-white">Entregas</h1>
+                 <p className="text-md text-gray-400">Monitoreo de entregas en tiempo real.</p>
             </div>
 
             <div className="flex-grow flex flex-col md:flex-row gap-6 overflow-hidden">

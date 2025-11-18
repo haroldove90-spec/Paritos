@@ -4,12 +4,12 @@ import { TrashIcon } from '../components/icons/TrashIcon';
 
 interface CartPageProps {
   cartItems: CartItem[];
-  onPlaceOrder: () => void;
+  onProceedToCheckout: () => void;
   onClearCart: () => void;
   setCart: React.Dispatch<React.SetStateAction<CartItem[]>>;
 }
 
-const CartPage: React.FC<CartPageProps> = ({ cartItems, onPlaceOrder, onClearCart, setCart }) => {
+const CartPage: React.FC<CartPageProps> = ({ cartItems, onProceedToCheckout, onClearCart, setCart }) => {
   const [isConfirmingClear, setIsConfirmingClear] = useState(false);
 
   const totalPrice = cartItems.reduce((total, item) => {
@@ -80,10 +80,10 @@ const CartPage: React.FC<CartPageProps> = ({ cartItems, onPlaceOrder, onClearCar
           </div>
           <div className="mt-8 flex flex-col space-y-3">
             <button
-              onClick={onPlaceOrder}
+              onClick={onProceedToCheckout}
               className="w-full bg-[#FFDF00] text-[#181818] font-bold py-3 rounded-lg transform hover:scale-[1.03] transition-transform duration-200"
             >
-              Realizar Pedido
+              Proceder al Pago
             </button>
             <button
               onClick={() => setIsConfirmingClear(true)}

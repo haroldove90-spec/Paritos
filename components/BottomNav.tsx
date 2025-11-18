@@ -1,11 +1,12 @@
-import React from 'react';
+
+import React, { useMemo } from 'react';
 import { HomeIcon } from './icons/HomeIcon';
 import { OrdersIcon } from './icons/OrdersIcon';
 import { HeartIcon } from './icons/HeartIcon';
 import { UserIcon } from './icons/UserIcon';
 import { CartIcon } from './icons/CartIcon';
-
-type ActiveView = 'Inicio' | 'Pedidos' | 'Favoritos' | 'Perfil' | 'Carrito' | 'Restaurante';
+import { MotorcycleIcon } from './icons/MotorcycleIcon';
+import type { ActiveView, UserRole } from '../types';
 
 interface NavItemProps {
   icon: React.ElementType;
@@ -21,7 +22,7 @@ const NavItem: React.FC<NavItemProps> = ({ icon: Icon, label, isActive, notifica
   const color = isActive ? activeColor : inactiveColor;
 
   return (
-    <button onClick={onClick} className={`flex flex-col items-center justify-center space-y-1 w-1/5 relative transition-colors duration-200 hover:text-white focus:outline-none ${color}`}>
+    <button onClick={onClick} className={`flex flex-col items-center justify-center space-y-1 flex-1 relative transition-colors duration-200 hover:text-white focus:outline-none ${color}`}>
       <div className="relative">
         <Icon className="w-6 h-6" />
         {isActive && <span className="absolute -top-1 -left-1 w-8 h-8 bg-[#FFDF00]/20 rounded-full animate-ping"></span>}
@@ -40,16 +41,28 @@ interface BottomNavProps {
     activeTab: ActiveView;
     onTabChange: (tab: ActiveView) => void;
     cartItemCount: number;
+    userRole: UserRole;
 }
 
-const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange, cartItemCount }) => {
-  const navItems: { id: ActiveView; icon: React.ElementType; label: string; notificationCount?: number }[] = [
-    { id: 'Inicio', icon: HomeIcon, label: 'Inicio' },
-    { id: 'Pedidos', icon: OrdersIcon, label: 'Pedidos' },
-    { id: 'Favoritos', icon: HeartIcon, label: 'Favoritos' },
-    { id: 'Perfil', icon: UserIcon, label: 'Perfil' },
-    { id: 'Carrito', icon: CartIcon, label: 'Carrito', notificationCount: cartItemCount },
-  ];
+const BottomNav: React.FC<BottomNavProps> = ({ activeTab, onTabChange, cartItemCount, userRole }) => {
+  
+  const navItems = useMemo(() => {
+    const items: { id: ActiveView; icon: React.ElementType; label: string; notificationCount?: number }[] = [
+      { id: 'Inicio', icon: HomeIcon, label: 'Inicio' },
+      { id: 'Pedidos', icon: OrdersIcon, label: 'Pedidos' },
+      { id: 'Favoritos', icon: HeartIcon, label: 'Favoritos' },
+      { id: 'Perfil', icon: UserIcon, label: 'Perfil' },
+    ];
+    
+    if (userRole?.toLowerCase() === 'cliente') {
+        items.push({ id: 'Conviertete', icon: MotorcycleIcon, label: 'Repartir' });
+    }
+
+    items.push({ id: 'Carrito', icon: CartIcon, label: 'Carrito', notificationCount: cartItemCount });
+    
+    return items;
+  }, [userRole, cartItemCount]);
+
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-black via-[#181818] to-[#181818] border-t border-[#3A3D42]/50 shadow-lg backdrop-blur-sm">

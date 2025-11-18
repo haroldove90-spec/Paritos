@@ -1,5 +1,7 @@
 {
   "name": "Paritos",
   "description": "Una interfaz de aplicación de entrega de comida similar a Uber Eats, diseñada para el negocio 'Paritos'.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "geolocation"
+  ]
 }

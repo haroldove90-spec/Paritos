@@ -1,42 +1,40 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Order, OrderStatus } from '../../types';
+import { ChevronDownIcon } from '../icons/ChevronDownIcon';
 
 interface ManageOrdersProps {
-    onBack: () => void;
     orders: Order[];
-    onUpdateOrderStatus: (orderId: number, status: OrderStatus) => void;
+    onUpdateOrderStatus: (orderId: number, status: OrderStatus, courierId?: number) => void;
 }
 
 const statusMap = {
-    pendiente: { text: 'Pendiente', color: 'text-gray-400', bg: 'bg-gray-400/10' },
-    en_preparacion: { text: 'Preparando', color: 'text-orange-400', bg: 'bg-orange-400/10' },
-    en_camino: { text: 'En Camino', color: 'text-blue-400', bg: 'bg-blue-400/10' },
-    entregado: { text: 'Entregado', color: 'text-green-400', bg: 'bg-green-400/10' },
+    pendiente: { text: 'Pendiente', color: 'text-gray-400', bg: 'bg-gray-400/10', border: 'border-gray-600' },
+    en_preparacion: { text: 'Preparando', color: 'text-orange-400', bg: 'bg-orange-400/10', border: 'border-orange-700' },
+    listo_para_recoger: { text: 'Listo', color: 'text-yellow-400', bg: 'bg-yellow-400/10', border: 'border-yellow-700' },
+    en_camino: { text: 'En Camino', color: 'text-blue-400', bg: 'bg-blue-400/10', border: 'border-blue-700' },
+    entregado: { text: 'Entregado', color: 'text-green-400', bg: 'bg-green-400/10', border: 'border-green-700' },
 }
 
-const ManageOrders: React.FC<ManageOrdersProps> = ({ onBack, orders, onUpdateOrderStatus }) => {
+const statusOptions: { value: OrderStatus, label: string }[] = [
+    { value: 'pendiente', label: 'Pendiente' },
+    { value: 'en_preparacion', label: 'En Preparación' },
+    { value: 'listo_para_recoger', label: 'Listo para Recoger' },
+    { value: 'en_camino', label: 'En Camino' },
+    { value: 'entregado', label: 'Entregado' },
+];
 
-    const getNextAction = (order: Order) => {
-        const buttonClass = "bg-[#FFDF00] text-[#181818] font-bold py-2 px-4 rounded-lg text-sm transform hover:scale-105 transition-transform duration-200";
-        switch (order.status) {
-            case 'pendiente':
-                return <button onClick={() => onUpdateOrderStatus(order.id, 'en_preparacion')} className={buttonClass}>Mover a Preparación</button>;
-            case 'en_preparacion':
-                return <button onClick={() => onUpdateOrderStatus(order.id, 'en_camino')} className={buttonClass}>Mover a En Camino</button>;
-            case 'en_camino':
-                return <button onClick={() => onUpdateOrderStatus(order.id, 'entregado')} className={buttonClass}>Marcar como Entregado</button>;
-            default:
-                return null;
-        }
+const ManageOrders: React.FC<ManageOrdersProps> = ({ orders, onUpdateOrderStatus }) => {
+    const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
+
+    const toggleOrderDetails = (orderId: number) => {
+        setExpandedOrderId(prevId => (prevId === orderId ? null : orderId));
     };
 
     return (
         <main className="flex-grow overflow-y-auto p-6">
-            <div className="flex justify-between items-center mb-6">
-                <div>
-                    <button onClick={onBack} className="text-sm text-[#FFDF00] hover:underline mb-1">&larr; Volver al Panel</button>
-                    <h2 className="text-2xl font-bold text-white">Monitoreo de Pedidos</h2>
-                </div>
+            <div className="mb-6">
+                 <h1 className="text-3xl font-bold text-white">Pedidos</h1>
+                 <p className="text-md text-gray-400">Monitorea y gestiona todos los pedidos.</p>
             </div>
 
             {orders.length === 0 ? (
@@ -46,53 +44,65 @@ const ManageOrders: React.FC<ManageOrdersProps> = ({ onBack, orders, onUpdateOrd
                 </div>
             ) : (
                 <div className="space-y-4">
-                    {orders.map((order) => (
-                        <div key={order.id} className="bg-[#1e1e1e] p-4 rounded-lg shadow-md">
-                            <div className="flex justify-between items-start mb-3">
-                                <div>
-                                    <h3 className="font-bold text-lg text-white">
-                                        Pedido #{order.id.toString().slice(-4)}
-                                    </h3>
-                                    <p className="text-sm text-gray-400">
-                                        {order.customerName} &bull; {new Date(order.date).toLocaleString()}
-                                    </p>
-                                </div>
-                                <div className={`text-sm font-bold px-3 py-1 rounded-full ${statusMap[order.status].color} ${statusMap[order.status].bg}`}>
-                                    {statusMap[order.status].text}
-                                </div>
-                            </div>
-                            {order.status === 'en_camino' && (
-                                <p className="text-xs font-semibold text-blue-300 bg-blue-500/20 rounded px-2 py-1 inline-block mb-3">
-                                    🛵 Pedido aceptado por un mensajero.
-                                </p>
-                            )}
-                            <div className="border-t border-b border-[#3A3D42] py-2 my-2">
-                                <h4 className="font-semibold text-gray-300 mb-1 text-sm">Artículos:</h4>
-                                <ul className="text-gray-300 space-y-1 text-sm">
-                                    {order.items.map((item) => (
-                                        <li key={item.id} className="flex justify-between">
-                                            <span>{item.quantity}x {item.name}</span>
-                                            <span>${(item.price * item.quantity).toFixed(2)}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                            <div className="text-right">
-                                <p className="font-bold text-white text-lg">
-                                    Total: ${order.total.toFixed(2)}
-                                </p>
-                            </div>
-
-                            {order.status !== 'entregado' && (
-                                <div className="border-t border-[#3A3D42] mt-3 pt-3 flex justify-between items-center">
-                                    <p className="text-sm font-semibold text-gray-300">Acciones:</p>
+                    {orders.map((order) => {
+                        const isExpanded = expandedOrderId === order.id;
+                        return (
+                            <div key={order.id} className="bg-[#1e1e1e] p-4 rounded-lg shadow-md transition-all duration-300">
+                                <div className="flex justify-between items-start cursor-pointer" onClick={() => toggleOrderDetails(order.id)}>
                                     <div>
-                                        {getNextAction(order)}
+                                        <h3 className="font-bold text-lg text-white">
+                                            Pedido #{order.id.toString().slice(-4)}
+                                        </h3>
+                                        <p className="text-sm text-gray-400">
+                                            {order.customerName} &bull; {new Date(order.date).toLocaleString()}
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <div className={`text-sm font-bold px-3 py-1 rounded-full ${statusMap[order.status].color} ${statusMap[order.status].bg}`}>
+                                            {statusMap[order.status].text}
+                                        </div>
+                                        <ChevronDownIcon className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
                                     </div>
                                 </div>
-                            )}
-                        </div>
-                    ))}
+                                
+                                <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isExpanded ? 'max-h-[1000px] mt-3 pt-3 border-t border-[#3A3D42]' : 'max-h-0'}`}>
+                                    <h4 className="font-semibold text-gray-300 mb-2 text-sm">Artículos:</h4>
+                                    <ul className="text-gray-300 space-y-2 text-sm">
+                                        {order.items.map((item) => (
+                                            <li key={item.id} className="flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <img src={item.imageUrl} alt={item.name} className="w-10 h-10 rounded-md object-cover"/>
+                                                    <span>{item.quantity}x {item.name}</span>
+                                                </div>
+                                                <span>${(item.price * item.quantity).toFixed(2)}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    <div className="text-right mt-4">
+                                        <p className="font-bold text-white text-lg">
+                                            Total: ${order.total.toFixed(2)}
+                                        </p>
+                                    </div>
+                                    <div className="border-t border-[#3A3D42] mt-3 pt-3 flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+                                        <p className="text-sm font-semibold text-gray-300">Cambiar estado:</p>
+                                        <div>
+                                            <select
+                                                value={order.status}
+                                                onChange={(e) => onUpdateOrderStatus(order.id, e.target.value as OrderStatus)}
+                                                className={`bg-[#2a2a2a] border ${statusMap[order.status].border} text-sm rounded-lg focus:ring-[#FFDF00] focus:border-[#FFDF00] block w-full sm:w-auto p-2 font-semibold transition-colors duration-200 ${statusMap[order.status].color}`}
+                                            >
+                                                {statusOptions.map(option => (
+                                                    <option key={option.value} value={option.value} className="font-sans">
+                                                        {option.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         </main>

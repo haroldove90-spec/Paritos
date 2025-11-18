@@ -10,13 +10,14 @@ interface OrdersPageProps {
 const statusMap = {
     pendiente: { text: 'Pendiente', color: 'text-gray-400', step: 1 },
     en_preparacion: { text: 'Preparando', color: 'text-orange-400', step: 2 },
-    en_camino: { text: 'En camino', color: 'text-blue-400', step: 3 },
-    entregado: { text: 'Entregado', color: 'text-green-400', step: 4 },
+    listo_para_recoger: { text: 'Listo', color: 'text-yellow-400', step: 3 },
+    en_camino: { text: 'En camino', color: 'text-blue-400', step: 4 },
+    entregado: { text: 'Entregado', color: 'text-green-400', step: 5 },
 }
 
 const StatusBar: React.FC<{status: OrderStatus}> = ({ status }) => {
     const currentStep = statusMap[status].step;
-    const steps = ['Pendiente', 'Preparando', 'En Camino', 'Entregado'];
+    const steps = ['Pendiente', 'Preparando', 'Listo', 'En Camino', 'Entregado'];
 
     return (
         <div className="flex items-center justify-between mt-4">

@@ -1,20 +1,25 @@
-import React from 'react';
-import { MenuIcon } from './icons/MenuIcon';
-import { SearchIcon } from './icons/SearchIcon';
-import { BellIcon } from './icons/BellIcon';
-import ManageRestaurants from './admin/ManageRestaurants';
-import ManageOrders from './admin/ManageOrders';
-import ManageCouriers from './admin/ManageCouriers';
-import ManageAnalytics from './admin/ManageAnalytics';
-import MonitorDeliveries from './admin/MonitorDeliveries';
-import type { Restaurant, Order, Courier, OrderStatus } from '../types';
+import React, { useMemo } from 'react';
+import { HomeIcon } from './icons/HomeIcon';
 import { BuildingStorefrontIcon } from './icons/BuildingStorefrontIcon';
 import { OrdersIcon } from './icons/OrdersIcon';
 import { TruckIcon } from './icons/TruckIcon';
 import { ChartBarIcon } from './icons/ChartBarIcon';
 import { MapPinIcon } from './icons/MapPinIcon';
+import { CurrencyDollarIcon } from './icons/CurrencyDollarIcon';
+import { TagIcon } from './icons/TagIcon';
+import { PhotoIcon } from './icons/PhotoIcon';
 
-type AdminView = 'Dashboard' | 'Restaurantes' | 'Pedidos' | 'Mensajeros' | 'Analíticas' | 'Entregas';
+import ManageRestaurants from './admin/ManageRestaurants';
+import ManageOrders from './admin/ManageOrders';
+import ManageCouriers from './admin/ManageCouriers';
+import ManageAnalytics from './admin/ManageAnalytics';
+import MonitorDeliveries from './admin/MonitorDeliveries';
+import ManageProducts from './admin/ManageProducts';
+import AdminSalesChart from './admin/AdminSalesChart';
+import ManageMedia from './admin/ManageMedia';
+import type { Restaurant, Order, Courier, OrderStatus, MenuItem, MediaItem, CourierApplication } from '../types';
+
+type AdminView = 'Dashboard' | 'Restaurantes' | 'Pedidos' | 'Mensajeros' | 'Analíticas' | 'Entregas' | 'Productos' | 'Media';
 
 interface AdminDashboardProps {
     currentView: AdminView;
@@ -27,196 +32,209 @@ interface AdminDashboardProps {
     couriers: Courier[];
     onSaveCourier: (courier: Courier) => void;
     onDeleteCourier: (id: number) => void;
+    onSaveProduct: (product: MenuItem, restaurantId: number) => void;
+    onDeleteProduct: (productId: number, restaurantId: number) => void;
     notificationCount: number;
     onNotificationsClick: () => void;
     allCategories: string[];
+    mediaLibrary: MediaItem[];
+    onFileUpload: (file: File) => Promise<string | null>;
+    onDeleteMedia: (mediaName: string) => void;
+    courierApplications: CourierApplication[];
+    onApproveApplication: (app: CourierApplication) => void;
+    onRejectApplication: (app: CourierApplication) => void;
 }
 
-const AdminCard: React.FC<{
-    onClick: () => void;
-    icon: React.ReactNode;
-    title: string;
-    description: string;
-    notification?: number;
-    badge?: string;
-}> = ({ onClick, icon, title, description, notification, badge }) => (
-    <button 
-        onClick={onClick} 
-        className="relative bg-[#2a2a2a] p-4 rounded-xl flex flex-col items-center justify-center aspect-square text-center
-                   transform hover:-translate-y-1.5 transition-all duration-300 ease-in-out shadow-lg
-                   hover:shadow-2xl hover:shadow-[#FFDF00]/20 hover:ring-2 hover:ring-[#FFDF00]/80 group"
-    >
-        {notification !== undefined && notification > 0 && (
-            <span className="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center border-2 border-[#2a2a2a] animate-pulse">
-                {notification}
-            </span>
-        )}
-        <div className="text-white mb-3 transition-transform duration-300 group-hover:scale-110">
+const StatCard: React.FC<{ title: string; value: string | number; icon: React.ReactNode }> = ({ title, value, icon }) => (
+    <div className="bg-[#1e1e1e] p-4 rounded-lg shadow-md flex items-center space-x-4">
+        <div className="bg-[#2a2a2a] p-3 rounded-full">
             {icon}
         </div>
-        <span className="font-bold text-lg text-white">{title}</span>
-        <p className="text-xs text-gray-400 mt-1 px-2">{description}</p>
-        {badge && (
-             <span className="mt-2 text-xs text-green-400 font-bold">{badge}</span>
-        )}
-    </button>
+        <div>
+            <p className="text-sm text-gray-400">{title}</p>
+            <p className="text-2xl font-bold text-white">{value}</p>
+        </div>
+    </div>
 );
 
-
-const AdminDashboard: React.FC<AdminDashboardProps> = ({ 
-    currentView, setView, 
-    restaurants, onSaveRestaurant, onDeleteRestaurant, 
-    orders, onUpdateOrderStatus,
-    couriers, onSaveCourier, onDeleteCourier,
-    notificationCount, onNotificationsClick,
-    allCategories
-}) => {
-
-  const DashboardHome: React.FC = () => {
-    const activeOrders = orders.filter(o => o.status === 'en_preparacion' || o.status === 'en_camino').length;
-    const availableCouriers = couriers.filter(c => c.status === 'disponible').length;
-    const activeDeliveries = orders.filter(o => o.status === 'en_camino');
-
-    const getCourier = (courierId: number | null) => {
-        if (!courierId) return null;
-        return couriers.find(c => c.id === courierId) || null;
-    };
-
-    const markerPositions = [
-        { top: '30%', left: '40%' },
-        { top: '55%', left: '60%' },
-        { top: '45%', left: '25%' },
-        { top: '65%', left: '35%' },
-        { top: '25%', left: '70%' },
+const AdminNav: React.FC<{ currentView: AdminView, setView: (view: AdminView) => void }> = ({ currentView, setView }) => {
+    const navItems = [
+        { id: 'Dashboard', label: 'Dashboard', icon: HomeIcon },
+        { id: 'Pedidos', label: 'Pedidos', icon: OrdersIcon },
+        { id: 'Restaurantes', label: 'Restaurantes', icon: BuildingStorefrontIcon },
+        { id: 'Productos', label: 'Productos', icon: TagIcon },
+        { id: 'Mensajeros', label: 'Mensajeros', icon: TruckIcon },
+        { id: 'Analíticas', label: 'Analíticas', icon: ChartBarIcon },
+        { id: 'Media', label: 'Media', icon: PhotoIcon },
     ];
-    
+
     return (
-     <main className="flex-grow overflow-y-auto p-6 space-y-6 animate-fade-in">
-        <div className="text-left mb-4">
-            <h2 className="text-3xl font-bold text-white">Hola, Administrador</h2>
-            <p className="text-md text-gray-400">Una vista rápida de las operaciones de Paritos.</p>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-            <AdminCard 
-                onClick={() => setView('Restaurantes')}
-                icon={<BuildingStorefrontIcon className="w-12 h-12" />}
-                title="Restaurantes"
-                description="Añade o edita los locales afiliados"
-            />
-            <AdminCard 
-                onClick={() => setView('Pedidos')}
-                icon={<OrdersIcon className="w-12 h-12" />}
-                title="Pedidos"
-                description="Monitorea las órdenes activas y pasadas"
-                notification={activeOrders}
-            />
-            <AdminCard 
-                onClick={() => setView('Mensajeros')}
-                icon={<TruckIcon className="w-12 h-12" />}
-                title="Mensajeros"
-                description="Gestiona tu flota de repartidores"
-                badge={`${availableCouriers} disponibles`}
-            />
-            <AdminCard 
-                onClick={() => setView('Analíticas')}
-                icon={<ChartBarIcon className="w-12 h-12" />}
-                title="Analíticas"
-                description="Visualiza datos de ventas y rendimiento"
-            />
-            <AdminCard 
-                onClick={() => setView('Entregas')}
-                icon={<MapPinIcon className="w-12 h-12" />}
-                title="Entregas"
-                description="Sigue a los mensajeros en tiempo real"
-            />
-        </div>
+        <nav className="flex-shrink-0 bg-[#1e1e1e] border-t border-[#3A3D42]/50">
+            <div className="w-full max-w-6xl mx-auto flex justify-around items-center h-20">
+                {navItems.map(item => {
+                    const isActive = currentView === item.id;
+                    const Icon = item.icon;
+                    return (
+                        <button 
+                            key={item.id}
+                            onClick={() => setView(item.id as AdminView)}
+                            className={`flex flex-col items-center justify-center space-y-1 flex-1 relative transition-colors duration-200 hover:text-white focus:outline-none ${isActive ? 'text-[#FFDF00]' : 'text-gray-400'}`}
+                        >
+                            <Icon className="w-6 h-6" />
+                            <span className="text-xs font-semibold">{item.label}</span>
+                        </button>
+                    );
+                })}
+            </div>
+        </nav>
+    );
+};
+
+const DashboardContent: React.FC<{
+    orders: Order[];
+    restaurants: Restaurant[];
+    setView: (view: AdminView) => void;
+}> = ({ orders, restaurants, setView }) => {
+    const { 
+        todaySales, 
+        todayOrdersCount, 
+        avgTicket,
+        salesChartData,
+        recentOrders
+    } = useMemo(() => {
+        const today = new Date().toDateString();
         
-        <div className="mt-8">
-            <div className="flex justify-between items-center mb-4">
-                 <h3 className="text-2xl font-bold text-white">Entregas Activas</h3>
-                 <button onClick={() => setView('Entregas')} className="text-sm font-semibold text-[#FFDF00] hover:underline">
-                    Ver mapa completo &rarr;
+        const todaysOrders = orders.filter(o => new Date(o.date).toDateString() === today);
+        const todaySales = todaysOrders.reduce((sum, order) => sum + order.total, 0);
+        const todayOrdersCount = todaysOrders.length;
+        const avgTicket = todayOrdersCount > 0 ? todaySales / todayOrdersCount : 0;
+
+        const last7Days = [...Array(7)].map((_, i) => {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            return d;
+        }).reverse();
+
+        const salesChartData = last7Days.map(date => {
+            const dayStr = date.toDateString();
+            const dayShort = date.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '');
+            const total = orders
+                .filter(o => new Date(o.date).toDateString() === dayStr)
+                .reduce((sum, o) => sum + o.total, 0);
+            return { label: dayShort.charAt(0).toUpperCase() + dayShort.slice(1), value: total };
+        });
+
+        const recentOrders = [...orders].sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
+
+        return { todaySales, todayOrdersCount, avgTicket, salesChartData, recentOrders };
+    }, [orders]);
+
+    return (
+        <main className="flex-grow overflow-y-auto p-4 md:p-6 space-y-6">
+            <div className="text-left">
+                <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+                <p className="text-md text-gray-400">Resumen de la operación de hoy.</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <StatCard title="Ventas de Hoy" value={`$${todaySales.toFixed(2)}`} icon={<CurrencyDollarIcon className="w-6 h-6 text-green-400"/>} />
+                <StatCard title="Pedidos de Hoy" value={todayOrdersCount} icon={<OrdersIcon className="w-6 h-6 text-blue-400"/>} />
+                <StatCard title="Ticket Promedio" value={`$${avgTicket.toFixed(2)}`} icon={<ChartBarIcon className="w-6 h-6 text-yellow-400"/>} />
+            </div>
+
+            <AdminSalesChart data={salesChartData} title="Ventas de la Semana" />
+
+            <div className="bg-[#1e1e1e] p-4 sm:p-6 rounded-lg shadow-lg">
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-bold text-white">Pedidos Recientes</h3>
+                    <button onClick={() => setView('Pedidos')} className="text-sm font-semibold text-[#FFDF00] hover:underline">
+                        Ver todos &rarr;
+                    </button>
+                </div>
+                <div className="space-y-3">
+                    {recentOrders.length > 0 ? recentOrders.map(order => (
+                         <div key={order.id} className="flex justify-between items-center bg-[#2a2a2a] p-3 rounded-md">
+                            <div>
+                                <p className="font-semibold text-white">Pedido #{order.id.toString().slice(-4)}</p>
+                                <p className="text-xs text-gray-400">{order.customerName}</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="font-bold text-white">${order.total.toFixed(2)}</p>
+                                <p className="text-xs text-gray-400">{order.status}</p>
+                            </div>
+                        </div>
+                    )) : (
+                        <p className="text-center text-gray-400 py-4">No hay pedidos recientes.</p>
+                    )}
+                </div>
+            </div>
+             <div className="text-center mt-4">
+                 <button onClick={() => setView('Analíticas')} className="bg-[#2a2a2a] text-white font-bold py-3 px-6 rounded-lg hover:bg-[#3a3a3a] transition-colors">
+                    Ver Analíticas Detalladas
                 </button>
             </div>
-            <div className="bg-[#1e1e1e] rounded-lg h-72 relative shadow-lg overflow-hidden group">
-                <img 
-                    src="https://www.mapquestapi.com/staticmap/v5/map?key=K1jmykG2aAXp15fA0deAblj2oA2U5g07&center=34.0522,-118.2437&zoom=12&size=800,400@2x&type=dark" 
-                    alt="Mapa de entregas" 
-                    className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#181818] via-transparent to-transparent"></div>
-                
-                {activeDeliveries.length > 0 ? (
-                    activeDeliveries.map((order, index) => {
-                        const courier = getCourier(order.courierId);
-                        if (!courier) return null;
-                        const position = markerPositions[index % markerPositions.length];
-                        return (
-                            <div 
-                                key={order.id}
-                                className="absolute transform -translate-x-1/2 -translate-y-full flex flex-col items-center cursor-pointer group"
-                                style={{ top: position.top, left: position.left }}
-                                title={`${courier.name} - Pedido #${order.id.toString().slice(-4)}`}
-                            >
-                                <div className="px-2 py-1 bg-[#181818] border-2 border-blue-400 rounded-lg text-white text-xs font-bold shadow-lg transition-transform duration-200 group-hover:scale-110 group-hover:border-[#FFDF00] group-hover:z-10">
-                                    {courier.name.split(' ')[0]}
-                                </div>
-                                <MapPinIcon className="w-8 h-8 text-blue-400 drop-shadow-lg group-hover:text-[#FFDF00] transition-colors duration-200" />
-                                <div className="w-3 h-3 bg-blue-400 rounded-full -mt-2 opacity-50 shadow-md animate-pulse group-hover:bg-[#FFDF00]"></div>
-                            </div>
-                        );
-                    })
-                ) : (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <p className="text-gray-400 bg-black/50 px-4 py-2 rounded-lg">No hay entregas en curso.</p>
-                    </div>
-                )}
-                 <div 
-                    onClick={() => setView('Entregas')}
-                    className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center cursor-pointer"
-                >
-                    <span className="text-white font-bold text-lg bg-[#FFDF00] text-[#181818] px-6 py-3 rounded-lg shadow-2xl">
-                        Abrir Monitor de Entregas
-                    </span>
-                 </div>
-            </div>
-        </div>
-      </main>
+        </main>
     );
+};
+
+const AdminDashboard: React.FC<AdminDashboardProps> = (props) => {
+  const { currentView, setView } = props;
+
+  const renderContent = () => {
+    switch (currentView) {
+        case 'Restaurantes':
+            return <ManageRestaurants 
+                        restaurants={props.restaurants} 
+                        onSave={props.onSaveRestaurant} 
+                        onDelete={props.onDeleteRestaurant} 
+                        allCategories={props.allCategories}
+                        mediaLibrary={props.mediaLibrary}
+                        onFileUpload={props.onFileUpload}
+                    />;
+        case 'Pedidos':
+            return <ManageOrders orders={props.orders} onUpdateOrderStatus={props.onUpdateOrderStatus} />;
+        case 'Mensajeros':
+            return <ManageCouriers 
+                        couriers={props.couriers} 
+                        onSave={props.onSaveCourier} 
+                        onDelete={props.onDeleteCourier}
+                        applications={props.courierApplications}
+                        onApprove={props.onApproveApplication}
+                        onReject={props.onRejectApplication}
+                    />;
+        case 'Analíticas':
+            return <ManageAnalytics orders={props.orders} restaurants={props.restaurants} couriers={props.couriers} />;
+        case 'Productos':
+            return <ManageProducts 
+                        restaurants={props.restaurants} 
+                        onSaveProduct={props.onSaveProduct} 
+                        onDeleteProduct={props.onDeleteProduct}
+                        mediaLibrary={props.mediaLibrary}
+                        onFileUpload={props.onFileUpload}
+                    />;
+        case 'Entregas':
+            return <MonitorDeliveries orders={props.orders} couriers={props.couriers} />;
+        case 'Media':
+            return <ManageMedia 
+                        mediaLibrary={props.mediaLibrary}
+                        onUpload={props.onFileUpload}
+                        onDelete={props.onDeleteMedia}
+                    />;
+        case 'Dashboard':
+        default:
+            return <DashboardContent orders={props.orders} restaurants={props.restaurants} setView={setView} />;
+    }
   };
 
   return (
-    <div className="flex flex-col h-full text-white">
-      <header className="flex-shrink-0 flex justify-between items-center p-4 bg-[#181818] border-b border-[#3A3D42]/50">
-        <div>
-          <h1 className="font-bold text-2xl text-white">Panel de Administrador</h1>
-          <p className="text-sm text-gray-400">Paritos</p>
-        </div>
-        <div className="flex items-center space-x-2">
-            <button className="p-2 rounded-full hover:bg-[#2a2a2a] transition-colors transition-transform duration-200 hover:scale-110" aria-label="Buscar">
-                <SearchIcon className="w-6 h-6 text-gray-300" />
-            </button>
-            <button onClick={onNotificationsClick} className="relative p-2 rounded-full hover:bg-[#2a2a2a] transition-colors transition-transform duration-200 hover:scale-110" aria-label="Ver notificaciones">
-                <BellIcon className="w-6 h-6 text-gray-300" />
-                {notificationCount > 0 && (
-                    <span className="absolute top-1 right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center border-2 border-[#181818]">
-                        {notificationCount}
-                    </span>
-                )}
-            </button>
-            <button className="p-2 rounded-full hover:bg-[#2a2a2a] transition-colors transition-transform duration-200 hover:scale-110" aria-label="Abrir menú">
-                <MenuIcon className="w-6 h-6 text-gray-300" />
-            </button>
-        </div>
-      </header>
-
-      {currentView === 'Dashboard' && <DashboardHome />}
-      {currentView === 'Restaurantes' && <ManageRestaurants onBack={() => setView('Dashboard')} restaurants={restaurants} onSave={onSaveRestaurant} onDelete={onDeleteRestaurant} allCategories={allCategories}/>}
-      {currentView === 'Pedidos' && <ManageOrders onBack={() => setView('Dashboard')} orders={orders} onUpdateOrderStatus={onUpdateOrderStatus} />}
-      {currentView === 'Mensajeros' && <ManageCouriers onBack={() => setView('Dashboard')} couriers={couriers} onSave={onSaveCourier} onDelete={onDeleteCourier} />}
-      {currentView === 'Analíticas' && <ManageAnalytics onBack={() => setView('Dashboard')} orders={orders} restaurants={restaurants} couriers={couriers} />}
-      {currentView === 'Entregas' && <MonitorDeliveries onBack={() => setView('Dashboard')} orders={orders} couriers={couriers} />}
-      <style>{`
+    <div className="flex flex-col h-full bg-[#181818] text-white">
+      <div className="flex-grow overflow-y-auto pb-20">
+          {renderContent()}
+      </div>
+      <div className="fixed bottom-0 left-0 right-0 z-20">
+         <AdminNav currentView={currentView} setView={setView} />
+      </div>
+       <style>{`
         @keyframes fade-in {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }

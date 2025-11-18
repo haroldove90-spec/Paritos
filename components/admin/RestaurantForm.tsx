@@ -1,20 +1,24 @@
 import React, { useState } from 'react';
-import type { Restaurant, MenuItem } from '../../types';
+import type { Restaurant, MenuItem, MediaItem } from '../../types';
 import { PlusIcon } from '../icons/PlusIcon';
 import { TrashIcon } from '../icons/TrashIcon';
 import MenuItemForm from './MenuItemForm';
+import ConfirmationDialog from './ConfirmationDialog';
+import MediaLibraryModal from './MediaLibraryModal';
 
 interface RestaurantFormProps {
     restaurant: Restaurant | null;
     onSave: (restaurant: Restaurant) => void;
     onClose: () => void;
     allCategories: string[];
+    mediaLibrary: MediaItem[];
+    onFileUpload: (file: File) => Promise<string | null>;
 }
 
-const RestaurantForm: React.FC<RestaurantFormProps> = ({ restaurant, onSave, onClose, allCategories }) => {
+const RestaurantForm: React.FC<RestaurantFormProps> = ({ restaurant, onSave, onClose, allCategories, mediaLibrary, onFileUpload }) => {
     const [formData, setFormData] = useState({
         name: restaurant?.name || '',
-        imageUrl: restaurant?.imageUrl || 'https://picsum.photos/seed/new/400/200',
+        imageUrl: restaurant?.imageUrl || '',
         rating: restaurant?.rating || 0,
         reviews: restaurant?.reviews || '0',
         deliveryTime: restaurant?.deliveryTime || '20-30 min',
@@ -24,9 +28,14 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({ restaurant, onSave, onC
         category: restaurant?.category || 'Mexicana',
     });
     
-    const [menuItems, setMenuItems] = useState<MenuItem[]>(restaurant?.menuItems || []);
+    const [menuItems, setMenuItems] = useState<MenuItem[]>(restaurant?.menu_items || []);
     const [isMenuItemFormOpen, setMenuItemFormOpen] = useState(false);
     const [editingMenuItem, setEditingMenuItem] = useState<MenuItem | null>(null);
+    const [isItemConfirmOpen, setIsItemConfirmOpen] = useState(false);
+    const [itemToDelete, setItemToDelete] = useState<MenuItem | null>(null);
+    const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
@@ -42,7 +51,7 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({ restaurant, onSave, onC
         const restaurantToSave: Restaurant = {
             ...formData,
             id: restaurant?.id || Date.now(),
-            menuItems: menuItems,
+            menu_items: menuItems,
         };
         onSave(restaurantToSave);
     }
@@ -58,7 +67,19 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({ restaurant, onSave, onC
     };
 
     const handleDeleteItem = (itemId: number) => {
-        setMenuItems(prev => prev.filter(item => item.id !== itemId));
+        const item = menuItems.find(i => i.id === itemId);
+        if (item) {
+            setItemToDelete(item);
+            setIsItemConfirmOpen(true);
+        }
+    };
+
+    const handleConfirmDeleteItem = () => {
+        if (itemToDelete) {
+            setMenuItems(prev => prev.filter(item => item.id !== itemToDelete.id));
+        }
+        setIsItemConfirmOpen(false);
+        setItemToDelete(null);
     };
 
     const handleSaveMenuItem = (item: MenuItem) => {
@@ -70,6 +91,23 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({ restaurant, onSave, onC
             return [...prev, item];
         });
         setMenuItemFormOpen(false);
+    };
+    
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setIsUploading(true);
+            const newUrl = await onFileUpload(file);
+            if (newUrl) {
+                setFormData(prev => ({...prev, imageUrl: newUrl}));
+            }
+            setIsUploading(false);
+        }
+    };
+
+    const handleSelectFromLibrary = (url: string) => {
+        setFormData(prev => ({ ...prev, imageUrl: url }));
+        setIsLibraryOpen(false);
     };
 
     return (
@@ -83,6 +121,28 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({ restaurant, onSave, onC
                     <div>
                         <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">Nombre</label>
                         <input type="text" name="name" id="name" value={formData.name} onChange={handleChange} className="w-full bg-[#2a2a2a] rounded-md border-transparent focus:ring-2 focus:ring-[#FFDF00]" required/>
+                    </div>
+                     <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-1">Imagen del Restaurante</label>
+                        <div className="mt-1 flex justify-center items-center px-6 pt-5 pb-6 border-2 border-gray-600 border-dashed rounded-md space-y-1 text-center bg-[#2a2a2a]">
+                            {isUploading ? (
+                                <p className="text-gray-400">Subiendo...</p>
+                            ) : formData.imageUrl ? (
+                                <img src={formData.imageUrl} alt="Preview" className="max-h-32 rounded-md mx-auto" />
+                            ) : (
+                                <svg className="mx-auto h-12 w-12 text-gray-500" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path></svg>
+                            )}
+                            <div className="flex text-sm text-gray-400 justify-center gap-4 mt-2">
+                                 <label htmlFor="file-upload" className="relative cursor-pointer bg-[#3A3D42] rounded-md font-medium text-white hover:text-[#FFDF00] focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-[#FFDF00] px-3 py-1">
+                                    <span>Subir archivo</span>
+                                    <input id="file-upload" name="file-upload" type="file" className="sr-only" onChange={handleFileChange} accept="image/*" disabled={isUploading} />
+                                </label>
+                                <button type="button" onClick={() => setIsLibraryOpen(true)} className="relative cursor-pointer bg-[#3A3D42] rounded-md font-medium text-white hover:text-[#FFDF00] focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-[#FFDF00] px-3 py-1" disabled={isUploading}>
+                                    Elegir de Mediateca
+                                </button>
+                            </div>
+                            <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>
+                        </div>
                     </div>
                      <div>
                         <label htmlFor="cuisine" className="block text-sm font-medium text-gray-300 mb-1">Cocina</label>
@@ -156,15 +216,32 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({ restaurant, onSave, onC
                         <button type="submit" className="bg-[#FFDF00] text-[#181818] font-bold py-2 px-4 rounded-lg hover:scale-105 transition-transform">Guardar Cambios</button>
                     </footer>
                 </form>
-
-                {isMenuItemFormOpen && (
-                    <MenuItemForm 
-                        item={editingMenuItem}
-                        onSave={handleSaveMenuItem}
-                        onClose={() => setMenuItemFormOpen(false)}
-                    />
-                )}
             </div>
+            
+            {isMenuItemFormOpen && (
+                <MenuItemForm 
+                    item={editingMenuItem}
+                    onSave={handleSaveMenuItem}
+                    onClose={() => setMenuItemFormOpen(false)}
+                />
+            )}
+            
+            <ConfirmationDialog
+                isOpen={isItemConfirmOpen}
+                onClose={() => setIsItemConfirmOpen(false)}
+                onConfirm={handleConfirmDeleteItem}
+                title="Confirmar Eliminación"
+                message={`¿Estás seguro de que quieres eliminar el platillo "${itemToDelete?.name}"?`}
+                zIndexClass="z-[70]"
+            />
+
+            {isLibraryOpen && (
+                <MediaLibraryModal
+                    mediaLibrary={mediaLibrary}
+                    onClose={() => setIsLibraryOpen(false)}
+                    onSelect={handleSelectFromLibrary}
+                />
+            )}
         </div>
     );
 };

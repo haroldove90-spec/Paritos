@@ -1,22 +1,37 @@
-import React, { useState } from 'react';
+
+import React, { useState, useMemo } from 'react';
 import type { UserRole } from '../types';
 import { AdjustmentsVerticalIcon } from './icons/AdjustmentsVerticalIcon';
 import { XIcon } from './icons/XIcon';
 
 interface RoleSwitcherProps {
-  currentRole: UserRole;
+  userRole: UserRole;
+  currentViewRole: UserRole;
   onRoleChange: (role: UserRole) => void;
 }
 
-const roles: UserRole[] = ['Cliente', 'Mensajero', 'Administracion'];
-
-const RoleSwitcher: React.FC<RoleSwitcherProps> = ({ currentRole, onRoleChange }) => {
+const RoleSwitcher: React.FC<RoleSwitcherProps> = ({ userRole, currentViewRole, onRoleChange }) => {
     const [isOpen, setIsOpen] = useState(false);
+
+    const availableRoles = useMemo((): UserRole[] => {
+        switch (userRole?.toLowerCase()) {
+            case 'administracion':
+                return ['Cliente', 'Mensajero', 'Administracion'];
+            case 'mensajero':
+                return ['Cliente', 'Mensajero'];
+            default:
+                return [];
+        }
+    }, [userRole]);
 
     const handleRoleChange = (role: UserRole) => {
         onRoleChange(role);
         setIsOpen(false);
     };
+    
+    if (availableRoles.length <= 1) {
+        return null;
+    }
 
     return (
         <div className="fixed bottom-24 right-4 z-50 md:bottom-6">
@@ -28,13 +43,13 @@ const RoleSwitcher: React.FC<RoleSwitcherProps> = ({ currentRole, onRoleChange }
                 >
                     <div className="flex flex-col items-center mb-4 space-y-2 p-3 bg-[#1e1e1e] rounded-xl shadow-2xl w-40">
                         <span className="text-sm font-bold text-gray-300 mb-1">Ver como:</span>
-                        {roles.map((role) => (
+                        {availableRoles.map((role) => (
                             <button
                                 key={role}
                                 onClick={() => handleRoleChange(role)}
                                 className={`w-full text-center px-4 py-2 text-sm font-semibold rounded-lg transition-colors duration-200
                                 ${
-                                    currentRole === role
+                                    currentViewRole === role
                                     ? 'bg-[#FFDF00] text-[#181818]'
                                     : 'bg-[#3A3D42] text-white hover:bg-gray-600'
                                 }`}
